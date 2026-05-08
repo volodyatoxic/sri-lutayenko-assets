@@ -1,0 +1,1585 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>НИИ — Дизайн-система</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!--
+═══════════════════════════════════════════════════════════════════════════════
+  НИИ — ДИЗАЙН-СИСТЕМА (источник правды для интерфейсов и Remotion-анимаций)
+═══════════════════════════════════════════════════════════════════════════════
+
+  КАК ПОЛЬЗОВАТЬСЯ ЭТИМ ФАЙЛОМ (для агента и человека):
+
+  1.  Файл — единый каталог: открой в браузере и увидишь, как выглядит каждый
+      элемент. Все примеры — рабочие, скопируй HTML/CSS прямо отсюда.
+
+  2.  Структура файла:
+        <head>           — все токены в виде CSS-переменных (--color-*, --fs-*,
+                           --space-*, --radius-*, --shadow-*). Меняй ТОЛЬКО их,
+                           если нужно крутануть всю систему.
+        <body>           — навигация по каталогу + секции:
+                              • Токены (цвет, типографика, сетка, радиусы)
+                              • Атомы  (кнопки, ссылки, бейджи, иконки)
+                              • Блоки  (карточки, callout, терминал, tool-row)
+                              • Шаблоны (header, hero, footer, страница целиком)
+
+  3.  Перед каждым блоком — HTML-комментарий по схеме:
+          ▸ ЧТО ЭТО     — короткое определение
+          ▸ КОГДА       — сценарии использования
+          ▸ ВАРИАНТЫ    — модификаторы и пропсы
+          ▸ КОМПОЗИЦИЯ  — с какими блоками сочетается
+          ▸ НЕ ДЕЛАТЬ   — анти-примеры
+
+  4.  Темы. data-theme="light" | "dark" на <html>. Переключатель — справа сверху
+      или клавиша T. В Remotion: задавай data-theme на корне сцены и используй
+      var(--color-*) — все цвета подхватятся автоматически.
+
+  5.  Копирование. По клику на любой токен/код — значение уходит в буфер.
+      Появляется тост «Скопировано». Удобно для дёрнуть hex или CSS-сниппет.
+
+  6.  Шрифты:
+        Geist        — основной (UI, заголовки, тексты).      300/400/500/600/700
+        Geist Mono   — терминалы, код, цифры в KPI-блоках.    400/500
+      В Remotion подключай те же семейства через staticFile или Google Fonts.
+
+  7.  Сетка анимаций (для Remotion).
+        Базовая частота — 30 fps. Стандартный duration входа: 18 кадров (0.6s)
+        с easing cubic-bezier(0.22, 1, 0.36, 1) — лежит в --ease-out. Хочешь
+        ускорить — 12 кадров. Замедлить (драмой) — 24. Большего не нужно.
+
+  ▸ АНТИ-ПРАВИЛА (важно для агента):
+      • Не вводи новые цвета вне палитры. Если не хватает — миксуй через
+        color-mix(in oklch, var(--color-fg) 60%, transparent), а не пиши
+        новые hex.
+      • Не используй emoji. Иконки — только из набора <svg-icons> ниже.
+      • Не ставь border-radius < 8px и > 24px без причины (кроме .pill = 999px).
+      • Не ставь тени на тёмной теме — там рамка вместо тени.
+      • Не центруй длинный текст. Текст body всегда выравнивание влево.
+      • Не используй градиенты в фонах секций. Фон — плоский --color-bg.
+
+═══════════════════════════════════════════════════════════════════════════════
+-->
+
+<style>
+  /*
+   ─────────────────────────────────────────────────────────────────────────
+   ТОКЕНЫ — корневые CSS-переменные. Это ЕДИНСТВЕННЫЙ источник цвета,
+   размера, тени и радиуса. Любой компонент ниже ссылается на эти переменные.
+   В Remotion: импортируй их же или продублируй в JS-объект THEME.
+   ─────────────────────────────────────────────────────────────────────────
+  */
+  :root {
+    /* — Палитра МОНОХРОМ. Нейтральные серые без тёплого подтона. ——— */
+    --color-bg:            #FFFFFF;   /* фон страницы, чистый белый */
+    --color-surface:       #FFFFFF;   /* карточки, поля ввода */
+    --color-surface-2:     #F4F4F4;   /* приглушённые блоки внутри surface */
+    --color-fg:            #0A0A0A;   /* основной текст, заголовки */
+    --color-fg-muted:      #555555;   /* вторичный текст, подписи */
+    --color-fg-subtle:     #888888;   /* третичный, плейсхолдеры, eyebrow */
+    --color-border:        #E5E5E5;   /* границы карточек, hr */
+    --color-border-strong: #0A0A0A;   /* «жёсткая» рамка под hard-shadow */
+
+    /* — АКЦЕНТ: красный. Один. Активные вкладки, ссылки, маркеры,
+         бренд-точка в логотипе. Не больше 5% площади экрана. —————— */
+    --color-accent:        #E5342B;   /* пожарно-красный */
+    --color-accent-fg:     #FFFFFF;
+
+    /* — Семантика. Также монохром-нейтральные + accent-red для danger. */
+    --color-success:       #0A0A0A;
+    --color-warning:       #0A0A0A;
+    --color-danger:        #E5342B;
+
+    /* — Инверсный блок (терминал/CTA-секция). Всегда чёрный. —————— */
+    --color-inverse-bg:    #0A0A0A;
+    --color-inverse-fg:    #F4F4F4;
+    --color-inverse-muted: #888888;
+
+    /* — Типографика. Шкала по «major third» (1.25), округлено. —————— */
+    --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, "JetBrains Mono", monospace;
+
+    --fs-xs:    12px;   --lh-xs:    16px;   /* подписи под полем, сноски */
+    --fs-sm:    13px;   --lh-sm:    18px;   /* eyebrow, метки, мелкая мета */
+    --fs-base:  16px;   --lh-base:  24px;   /* body */
+    --fs-md:    18px;   --lh-md:    28px;   /* lead абзац под H1 */
+    --fs-lg:    22px;   --lh-lg:    30px;   /* H3, заголовки карточек */
+    --fs-xl:    28px;   --lh-xl:    36px;   /* H2 секций */
+    --fs-2xl:   36px;   --lh-2xl:   44px;   /* H1 страницы */
+    --fs-3xl:   56px;   --lh-3xl:   62px;   /* hero, display */
+    --fs-4xl:   88px;   --lh-4xl:   92px;   /* большая цифра / KPI */
+
+    --tracking-tight:  -0.02em;   /* для display и H1 */
+    --tracking-normal:  0;
+    --tracking-wide:    0.08em;   /* для eyebrow uppercase */
+
+    --weight-regular: 400;
+    --weight-medium:  500;
+    --weight-semibold: 600;
+    --weight-bold:    700;
+
+    /* — Сетка и отступы. База 4px, рабочая шкала ниже. ——————————————— */
+    --space-1:   4px;
+    --space-2:   8px;
+    --space-3:  12px;
+    --space-4:  16px;
+    --space-5:  20px;
+    --space-6:  24px;
+    --space-8:  32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-24: 96px;
+
+    --container-max: 760px;   /* основная колонка чтения */
+    --container-wide: 1120px; /* широкая (для двух-колоночной сетки карточек) */
+
+    /* — Радиусы. Монохромный/брутальный язык: радиусы НЕБОЛЬШИЕ.
+         Большинство блоков — острые или 4-8px. Pill оставлен для chip
+         и навигационных капсул. ——————————————————————————————————— */
+    --radius-sm:  4px;    /* инпут, маленький бейдж */
+    --radius-md:  6px;    /* кнопки, поля */
+    --radius-lg:  8px;    /* карточки */
+    --radius-xl:  12px;   /* большие карточки и модалы */
+    --radius-pill: 999px; /* pill-кнопки и chip */
+
+    /* — Тени ЖЁСТКИЕ. Solid-offset без блюра, как в брутализм/swiss.
+         Всегда чёрные, на «жёсткой» границе 1px. На dark — инвертируются. */
+    --shadow-xs: 2px 2px 0 0 var(--color-fg);
+    --shadow-sm: 3px 3px 0 0 var(--color-fg);
+    --shadow-md: 5px 5px 0 0 var(--color-fg);
+    --shadow-lg: 8px 8px 0 0 var(--color-fg);
+
+    /* — Анимация. Используй ИМЕННО эти значения, чтобы движение
+         в продукте и в Remotion было одинаковым. ——————————————————— */
+    --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-in:     cubic-bezier(0.55, 0, 1, 0.45);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --dur-fast:    120ms;   /* hover, focus, мелкая обратная связь */
+    --dur-base:    220ms;   /* появление, перестроения */
+    --dur-slow:    420ms;   /* тяжёлые перестроения, оверлеи */
+
+    /* — Хедер/футер ————————————————————————————————————————————————— */
+    --header-h: 64px;
+  }
+
+  [data-theme="dark"] {
+    --color-bg:            #0A0A0A;
+    --color-surface:       #0A0A0A;
+    --color-surface-2:     #161616;
+    --color-fg:            #F4F4F4;
+    --color-fg-muted:      #A8A8A8;
+    --color-fg-subtle:     #6E6E6E;
+    --color-border:        #2A2A2A;
+    --color-border-strong: #F4F4F4;
+    --color-accent:        #FF5247;
+    --color-accent-fg:     #0A0A0A;
+    --color-inverse-bg:    #F4F4F4;
+    --color-inverse-fg:    #0A0A0A;
+    --color-inverse-muted: #555555;
+  }
+
+  /* ─── Сброс и базовые правила ─────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font: var(--weight-regular) var(--fs-base)/var(--lh-base) var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background var(--dur-base) var(--ease-out),
+                color var(--dur-base) var(--ease-out);
+  }
+  ::selection { background: color-mix(in oklch, var(--color-accent) 30%, transparent); }
+  h1, h2, h3, h4 { margin: 0; font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+  p  { margin: 0; }
+  a  { color: inherit; text-decoration: none; }
+  hr { border: 0; border-top: 1px solid var(--color-border); margin: 0; }
+  code, pre, kbd { font-family: var(--font-mono); }
+
+  /* ─── Container helper ────────────────────────────────────────────── */
+  .container       { max-width: var(--container-max);  margin: 0 auto; padding: 0 var(--space-6); }
+  .container-wide  { max-width: var(--container-wide); margin: 0 auto; padding: 0 var(--space-6); }
+
+  /* ─── DS-каталог: разводка страницы ───────────────────────────────── */
+  .ds-shell { display: grid; grid-template-columns: 240px 1fr; gap: var(--space-12);
+              max-width: 1280px; margin: 0 auto; padding: var(--space-12) var(--space-6) var(--space-24); }
+  @media (max-width: 880px) { .ds-shell { grid-template-columns: 1fr; gap: var(--space-8); } }
+
+  .ds-toc { position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start;
+            font-size: var(--fs-sm); }
+  .ds-toc h4 { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+               color: var(--color-fg-subtle); font-weight: var(--weight-medium); margin-bottom: var(--space-3); }
+  .ds-toc ul { list-style: none; margin: 0 0 var(--space-6); padding: 0; display: grid; gap: 2px; }
+  .ds-toc a  { display: block; padding: 6px 8px; border-radius: var(--radius-sm); color: var(--color-fg-muted); }
+  .ds-toc a:hover { color: var(--color-fg); background: var(--color-surface-2); }
+  @media (max-width: 880px) { .ds-toc { position: static; } }
+
+  .ds-section + .ds-section { margin-top: var(--space-16); }
+  .ds-section__head { margin-bottom: var(--space-6); }
+  .ds-section__eyebrow {
+    font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: var(--tracking-wide);
+    color: var(--color-fg-subtle); font-weight: var(--weight-medium);
+  }
+  .ds-section__title { font-size: var(--fs-2xl); line-height: var(--lh-2xl); margin: var(--space-2) 0 var(--space-3); }
+  .ds-section__lead  { color: var(--color-fg-muted); font-size: var(--fs-md); line-height: var(--lh-md); max-width: 60ch; }
+
+  .ds-block { display: grid; gap: var(--space-4); }
+  .ds-block + .ds-block { margin-top: var(--space-10); }
+  .ds-block__name {
+    font-size: var(--fs-sm); font-weight: var(--weight-medium);
+    text-transform: uppercase; letter-spacing: var(--tracking-wide);
+    color: var(--color-fg-subtle);
+  }
+  .ds-block__title { font-size: var(--fs-lg); line-height: var(--lh-lg); }
+  .ds-block__desc  { color: var(--color-fg-muted); max-width: 70ch; }
+
+  .ds-stage {
+    border: 1px solid var(--color-fg);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-sm);
+  }
+  .ds-stage--bare { padding: 0; overflow: hidden; }
+  .ds-stage--alt  { background: var(--color-surface-2); }
+  .ds-stage--inverse { background: var(--color-inverse-bg); color: var(--color-inverse-fg); }
+
+  .ds-meta { display: grid; gap: var(--space-2); font-size: var(--fs-sm); color: var(--color-fg-muted); }
+  .ds-meta__row { display: grid; grid-template-columns: 110px 1fr; gap: var(--space-3); align-items: baseline; }
+  .ds-meta__row dt { color: var(--color-fg-subtle); font-weight: var(--weight-medium);
+                      text-transform: uppercase; letter-spacing: var(--tracking-wide); font-size: 11px; }
+
+  /* ─── Inline copy chip (общий помощник) ───────────────────────────── */
+  .copy {
+    display: inline-flex; align-items: center; gap: 6px; cursor: copy;
+    padding: 2px 8px; border-radius: var(--radius-sm);
+    background: var(--color-surface-2); border: 1px solid var(--color-border);
+    font-family: var(--font-mono); font-size: 12px; line-height: 18px;
+    transition: background var(--dur-fast) var(--ease-out), border-color var(--dur-fast);
+  }
+  .copy:hover { border-color: var(--color-border-strong); background: var(--color-surface); }
+  .copy[data-copied="1"] { border-color: var(--color-success); color: var(--color-success); }
+
+  pre.copy-block {
+    margin: 0; padding: var(--space-4) var(--space-5);
+    background: var(--color-surface-2); border: 1px solid var(--color-border);
+    border-radius: var(--radius-md); font-size: 13px; line-height: 20px;
+    color: var(--color-fg); cursor: copy; overflow: auto; white-space: pre;
+  }
+  pre.copy-block:hover { border-color: var(--color-border-strong); }
+
+  /* ─── Toast «скопировано» ─────────────────────────────────────────── */
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 16px);
+    padding: 10px 14px; border-radius: var(--radius-pill);
+    background: var(--color-fg); color: var(--color-bg);
+    font-size: 13px; font-weight: var(--weight-medium);
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+    z-index: 9999;
+  }
+  .toast[data-show="1"] { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     ХЕДЕР каталога (его же используем как ШАБЛОН для шапки лендинга)
+     ═══════════════════════════════════════════════════════════════════ */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in oklch, var(--color-bg) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .nav__inner { display: flex; align-items: center; gap: var(--space-4);
+                height: var(--header-h); max-width: 1280px; margin: 0 auto; padding: 0 var(--space-6); }
+  .nav__brand { display: flex; align-items: center; gap: 8px; font-weight: var(--weight-semibold); }
+  .nav__brand .logo-mark { width: 22px; height: 22px; display: grid; place-items: center;
+                            color: var(--color-accent); }
+  .nav__list { display: flex; gap: 2px; margin: 0 auto; padding: 4px;
+                background: var(--color-surface); border: 1px solid var(--color-border);
+                border-radius: var(--radius-pill); }
+  .nav__item { display: flex; align-items: center; gap: 6px;
+                padding: 6px 12px; font-size: 13px; color: var(--color-fg-muted);
+                border-radius: var(--radius-pill);
+                transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast); }
+  .nav__item svg { width: 14px; height: 14px; }
+  .nav__item:hover { color: var(--color-fg); background: var(--color-surface-2); }
+  .nav__item[aria-current="page"] { background: var(--color-fg); color: var(--color-bg); }
+  .nav__cta { margin-left: auto; }
+
+  @media (max-width: 880px) {
+    .nav__list { display: none; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     АТОМЫ
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* — Кнопка ——————————————————————————————————————————————————————— */
+  .btn {
+    --_bg: var(--color-fg); --_fg: var(--color-bg); --_bd: transparent;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: var(--radius-pill);
+    background: var(--_bg); color: var(--_fg); border: 1px solid var(--_bd);
+    font: var(--weight-medium) 14px/1 var(--font-sans);
+    cursor: pointer; user-select: none;
+    transition: transform var(--dur-fast) var(--ease-out),
+                background var(--dur-fast) var(--ease-out),
+                color var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover  { transform: translate(-1px,-1px); box-shadow: var(--shadow-xs); }
+  .btn:active { transform: translate(0,0); box-shadow: none; }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 45%, transparent); }
+  .btn svg { width: 14px; height: 14px; }
+
+  .btn--primary   { /* default = primary, чёрный pill */ }
+  .btn--secondary { --_bg: var(--color-surface); --_fg: var(--color-fg); --_bd: var(--color-fg); }
+  .btn--secondary:hover { background: var(--color-surface); }
+  .btn--ghost     { --_bg: transparent; --_fg: var(--color-fg); --_bd: transparent; }
+  .btn--ghost:hover { background: var(--color-surface-2); transform: none; box-shadow: none; }
+  .btn--accent    { --_bg: var(--color-accent); --_fg: var(--color-accent-fg); --_bd: var(--color-accent); }
+  .btn--danger    { --_bg: var(--color-accent); --_fg: var(--color-accent-fg); --_bd: var(--color-accent); }
+  .btn--sm        { padding: 6px 12px; font-size: 12px; }
+  .btn--lg        { padding: 14px 22px; font-size: 16px; }
+  .btn--icon      { padding: 8px; width: 36px; height: 36px; justify-content: center; }
+  .btn--icon.btn--secondary svg { width: 16px; height: 16px; }
+
+  /* — Текстовая ссылка с подчёркиванием на hover ———————————————————— */
+  .link {
+    color: var(--color-fg); border-bottom: 1px solid var(--color-border-strong);
+    padding-bottom: 1px; transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast);
+  }
+  .link:hover { border-color: var(--color-fg); }
+  .link--accent { color: var(--color-accent); border-color: color-mix(in oklch, var(--color-accent) 50%, transparent); }
+  .link--accent:hover { border-color: var(--color-accent); }
+
+  /* — Бейдж / Pill ————————————————————————————————————————————————— */
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: var(--radius-pill);
+    font: var(--weight-medium) 12px/1 var(--font-sans);
+    background: var(--color-surface); color: var(--color-fg);
+    border: 1px solid var(--color-fg);
+  }
+  .badge--solid    { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .badge--accent   { background: var(--color-accent); color: var(--color-accent-fg); border-color: var(--color-accent); }
+  .badge--outline-accent { color: var(--color-accent); border-color: var(--color-accent); background: transparent; }
+  .badge--dot::before {
+    content: ""; width: 6px; height: 6px; border-radius: 999px; background: currentColor; display: inline-block;
+  }
+
+  /* — Eyebrow (надзаголовочная метка) ——————————————————————————————— */
+  .eyebrow {
+    display: inline-block; font-size: var(--fs-sm); line-height: 1;
+    text-transform: uppercase; letter-spacing: var(--tracking-wide);
+    color: var(--color-fg-subtle); font-weight: var(--weight-medium);
+  }
+
+  /* — Иконочный «фрейм» (квадрат с иконкой, как в hero раздела) ——— */
+  .icon-frame {
+    width: 44px; height: 44px; border-radius: var(--radius-sm);
+    border: 1px solid var(--color-fg); background: var(--color-surface);
+    display: grid; place-items: center; color: var(--color-fg);
+    box-shadow: var(--shadow-xs);
+  }
+  .icon-frame--lg { width: 56px; height: 56px; border-radius: var(--radius-lg); }
+  .icon-frame--inverse { background: var(--color-inverse-bg); color: var(--color-inverse-fg); border-color: transparent; }
+
+  /* — Брендовый логотип-точка (квадрат с акцентным символом) ————— */
+  .brand-mark {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--color-fg); color: var(--color-bg);
+    display: grid; place-items: center;
+  }
+  .brand-mark svg { width: 16px; height: 16px; }
+
+  /* — Хлебные крошки ——————————————————————————————————————————————— */
+  .crumbs { display: flex; align-items: center; gap: 6px; font-size: var(--fs-sm); color: var(--color-fg-subtle); }
+  .crumbs a { color: var(--color-fg-muted); }
+  .crumbs a:hover { color: var(--color-fg); }
+  .crumbs__sep { color: var(--color-fg-subtle); }
+  .crumbs__current { color: var(--color-fg); }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     БЛОКИ (молекулы и организмы)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* — Hero раздела ————————————————————————————————————————————————— */
+  .hero { display: grid; gap: var(--space-4); }
+  .hero__title { font-size: var(--fs-3xl); line-height: var(--lh-3xl); letter-spacing: var(--tracking-tight); }
+  .hero__lead  { color: var(--color-fg-muted); font-size: var(--fs-md); line-height: var(--lh-md); max-width: 60ch; }
+
+  /* — Лонг-форма ——————————————————————————————————————————————————— */
+  .prose { display: grid; gap: var(--space-4); max-width: 65ch; }
+  .prose h2 { font-size: var(--fs-xl); line-height: var(--lh-xl); margin-top: var(--space-4); }
+  .prose h3 { font-size: var(--fs-lg); line-height: var(--lh-lg); margin-top: var(--space-2); }
+  .prose p  { font-size: var(--fs-base); line-height: var(--lh-base); color: var(--color-fg); }
+  .prose strong { font-weight: var(--weight-semibold); }
+  .prose ul { padding-left: var(--space-5); margin: 0; display: grid; gap: var(--space-1); color: var(--color-fg); }
+
+  /* — Callout / info-box ————————————————————————————————————————— */
+  .callout {
+    border: 1px solid var(--color-fg); background: var(--color-surface);
+    border-radius: var(--radius-md); padding: var(--space-5) var(--space-6);
+    color: var(--color-fg); font-size: var(--fs-base); line-height: var(--lh-base);
+  }
+  .callout--accent  { border-color: var(--color-accent);
+                       background: color-mix(in oklch, var(--color-accent) 8%, var(--color-surface)); }
+  .callout--inverse { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .callout--inverse strong { color: var(--color-accent); }
+  .callout strong { font-weight: var(--weight-semibold); }
+
+  /* — Feature-карточка (иконка / заголовок / описание) ——————————— */
+  .feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--space-4); }
+  @media (max-width: 720px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature {
+    background: var(--color-surface); border: 1px solid var(--color-fg);
+    border-radius: var(--radius-lg); padding: var(--space-6);
+    display: grid; gap: var(--space-3); align-content: start;
+    transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
+  }
+  .feature:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-md); }
+  .feature__icon { width: 28px; height: 28px; color: var(--color-fg); }
+  .feature__title { font-size: var(--fs-md); line-height: 1.3; font-weight: var(--weight-semibold); letter-spacing: 0; }
+  .feature__desc  { color: var(--color-fg-muted); font-size: var(--fs-base); line-height: var(--lh-base); }
+
+  /* — Tool-row карточка (полная ширина: иконка слева, текст, экшн справа) — */
+  .tool-row {
+    display: grid; grid-template-columns: 40px 1fr auto auto; gap: var(--space-4);
+    align-items: center;
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface); border: 1px solid var(--color-fg);
+    border-radius: var(--radius-lg);
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .tool-row:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-sm); }
+  .tool-row__avatar {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--color-surface-2); display: grid; place-items: center;
+    color: var(--color-fg);
+  }
+  .tool-row__title { font-weight: var(--weight-semibold); font-size: var(--fs-base); }
+  .tool-row__desc  { color: var(--color-fg-muted); font-size: 13px; line-height: 18px; margin-top: 2px; }
+  .tool-row__action { color: var(--color-fg-muted); }
+  .tool-row__action:hover { color: var(--color-fg); }
+  .tool-row + .tool-row { margin-top: var(--space-3); }
+
+  /* — Терминал —————————————————————————————————————————————————————— */
+  .terminal {
+    background: var(--color-inverse-bg); color: var(--color-inverse-fg);
+    border-radius: var(--radius-md); overflow: hidden;
+    border: 1px solid var(--color-fg); box-shadow: var(--shadow-sm);
+    font-family: var(--font-mono); font-size: 13px; line-height: 22px;
+  }
+  .terminal__bar {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 14px; background: rgba(255,255,255,.04);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    font-size: 12px; color: var(--color-inverse-muted);
+  }
+  .terminal__dot { width: 11px; height: 11px; border-radius: 999px; background: #3a3833; }
+  .terminal__dot--r { background: #ED6A5E; }
+  .terminal__dot--y { background: #F4BF4F; }
+  .terminal__dot--g { background: #62C554; }
+  .terminal__dot + .terminal__dot { margin-left: -2px; }
+  .terminal__title { margin-left: 12px; }
+  .terminal__body { padding: var(--space-6) var(--space-8); }
+  .terminal .prompt { color: var(--color-inverse-muted); }
+  .terminal .cmd    { color: var(--color-inverse-fg); }
+  .terminal .out    { color: var(--color-inverse-muted); }
+  .terminal .ok     { color: var(--color-accent); }
+  .terminal .arr::before { content: "→ "; color: var(--color-inverse-muted); }
+
+  /* — Pagination prev/next ——————————————————————————————————————— */
+  .pager { display: flex; justify-content: space-between; gap: var(--space-3); }
+  .pager__btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: var(--radius-pill);
+    background: var(--color-surface); border: 1px solid var(--color-fg);
+    color: var(--color-fg); font-size: 14px; font-weight: var(--weight-medium);
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .pager__btn:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-xs); }
+  .pager__btn--next { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+
+  /* — Палитра-свотчи ———————————————————————————————————————————— */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
+  .swatch  {
+    display: grid; grid-template-rows: 64px auto auto; cursor: copy;
+    background: var(--color-surface); border: 1px solid var(--color-fg);
+    border-radius: var(--radius-sm); overflow: hidden;
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .swatch:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-sm); }
+  .swatch__chip { background: var(--_c); border-bottom: 1px solid var(--color-fg); }
+  .swatch__name { padding: 8px 10px 0; font-size: 13px; font-weight: var(--weight-medium); }
+  .swatch__val  { padding: 0 10px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--color-fg-muted); }
+
+  /* — Сэмплы шрифта ———————————————————————————————————————————— */
+  .type-row {
+    display: grid; grid-template-columns: 120px 1fr auto; gap: var(--space-4);
+    padding: var(--space-3) 0; align-items: baseline;
+    border-bottom: 1px dashed var(--color-border);
+  }
+  .type-row:last-child { border-bottom: 0; }
+  .type-row__label { font-size: var(--fs-sm); color: var(--color-fg-subtle); font-family: var(--font-mono); }
+  .type-row__sample { color: var(--color-fg); }
+  .type-row__meta { font-family: var(--font-mono); font-size: 11px; color: var(--color-fg-muted); }
+
+  /* — Spacing шкала визуально ——————————————————————————————————— */
+  .scale-list { display: grid; gap: 8px; }
+  .scale-row {
+    display: grid; grid-template-columns: 80px 1fr 80px; gap: var(--space-3);
+    align-items: center; font-family: var(--font-mono); font-size: 12px;
+  }
+  .scale-row__bar { height: 10px; background: var(--color-fg); border-radius: 4px; }
+  .scale-row__val { color: var(--color-fg-muted); justify-self: end; }
+
+  /* — Радиусы визуально ——————————————————————————————————————— */
+  .radius-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: var(--space-3); }
+  .radius-tile {
+    aspect-ratio: 1 / 1; background: var(--color-fg); display: grid; place-items: end center;
+    color: var(--color-bg); padding: 6px; font-family: var(--font-mono); font-size: 11px;
+  }
+
+  /* — Тени визуально ———————————————————————————————————————————— */
+  .shadow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: var(--space-4); }
+  .shadow-tile {
+    aspect-ratio: 1 / 1; background: var(--color-surface); border-radius: var(--radius-md);
+    display: grid; place-items: end center; padding: 10px; font-family: var(--font-mono); font-size: 11px;
+    color: var(--color-fg-muted); border: 1px solid var(--color-border);
+  }
+  .shadow-tile--xs { box-shadow: var(--shadow-xs); }
+  .shadow-tile--sm { box-shadow: var(--shadow-sm); }
+  .shadow-tile--md { box-shadow: var(--shadow-md); }
+  .shadow-tile--lg { box-shadow: var(--shadow-lg); }
+
+  /* — Иконки ————————————————————————————————————————————————————— */
+  .icon-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--space-2);
+  }
+  .icon-tile {
+    display: grid; gap: 6px; place-items: center; padding: var(--space-3);
+    border: 1px solid var(--color-fg); border-radius: var(--radius-sm);
+    background: var(--color-surface); cursor: copy;
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .icon-tile:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-xs); }
+  .icon-tile svg { width: 22px; height: 22px; color: var(--color-fg); }
+  .icon-tile span { font-family: var(--font-mono); font-size: 10px; color: var(--color-fg-muted); }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     ШАБЛОН: страница раздела (как narrators.agency/agents)
+     ═══════════════════════════════════════════════════════════════════ */
+  .page-template { display: grid; gap: var(--space-12); }
+  .page-template hr { margin: var(--space-2) 0; }
+
+  /* ─── Footer ──────────────────────────────────────────────────────── */
+  .footer { border-top: 1px solid var(--color-border); padding: var(--space-8) 0;
+            color: var(--color-fg-muted); font-size: 13px; margin-top: var(--space-16); }
+  .footer__inner { display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-6);
+                    align-items: center; max-width: 1280px; margin: 0 auto; padding: 0 var(--space-6); }
+  .footer__brand { display: flex; align-items: center; gap: 8px; color: var(--color-fg); font-weight: var(--weight-medium); }
+  .footer__nav { display: flex; gap: var(--space-5); }
+  .footer__nav a:hover { color: var(--color-fg); }
+  .footer__by { margin-left: auto; color: var(--color-fg-subtle); }
+
+  /* ─── Theme toggle (utility, не в каталоге) ───────────────────────── */
+  .theme-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px 6px 6px; border-radius: var(--radius-pill);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    color: var(--color-fg-muted); cursor: pointer; font-size: 12px;
+  }
+  .theme-toggle:hover { color: var(--color-fg); border-color: var(--color-border-strong); }
+  .theme-toggle__knob {
+    width: 22px; height: 22px; border-radius: 999px; background: var(--color-fg); color: var(--color-bg);
+    display: grid; place-items: center;
+  }
+  .theme-toggle__knob svg { width: 12px; height: 12px; }
+</style>
+</head>
+<body>
+
+<!-- =========================================================================
+  ▸ ЧТО ЭТО     — глобальный фиксированный <nav>: бренд, центральные таб-ссылки
+                  в pill-капсуле, CTA-кнопка справа.
+  ▸ КОГДА       — каждый лендинг и страница каталога. Один экземпляр на сайт.
+  ▸ ВАРИАНТЫ    — на узких экранах центральная капсула скрывается (см. media);
+                  CTA остаётся всегда. На странице без табов оставь только
+                  бренд + CTA.
+  ▸ КОМПОЗИЦИЯ  — обязательно sticky top:0 + полупрозрачный фон с blur,
+                  чтобы контент чётко проскальзывал под ним.
+  ▸ НЕ ДЕЛАТЬ   — не подставляй цветной hover для ВСЕХ таб-пунктов сразу
+                  (только для одного, по которому курсор); не более 7 пунктов
+                  в капсуле; не делай CTA того же стиля, что и таб (теряется
+                  иерархия) — CTA всегда .btn--primary.
+========================================================================== -->
+<header class="nav" role="banner">
+  <div class="nav__inner">
+    <a href="#top" class="nav__brand">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+      </span>
+      <span>НИИ&nbsp;— Дизайн-система</span>
+    </a>
+    <nav class="nav__list" aria-label="Разделы">
+      <a class="nav__item" href="#tokens"  aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>Токены</a>
+      <a class="nav__item" href="#atoms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>Атомы</a>
+      <a class="nav__item" href="#blocks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Блоки</a>
+      <a class="nav__item" href="#templates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Шаблон</a>
+      <a class="nav__item" href="#motion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>Motion</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Сменить тему (T)">
+      <span class="theme-toggle__knob" id="themeKnob">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </span>
+      <span id="themeLabel">Тема: light</span>
+    </button>
+  </div>
+</header>
+
+<main class="ds-shell" id="top">
+  <!-- ─── Левый sticky-навигатор каталога ─────────────────────────── -->
+  <aside class="ds-toc" aria-label="Содержание">
+    <h4>Токены</h4>
+    <ul>
+      <li><a href="#colors">Цвета</a></li>
+      <li><a href="#typography">Типографика</a></li>
+      <li><a href="#spacing">Сетка и отступы</a></li>
+      <li><a href="#radii">Радиусы</a></li>
+      <li><a href="#shadows">Тени</a></li>
+      <li><a href="#motion">Motion</a></li>
+    </ul>
+    <h4>Атомы</h4>
+    <ul>
+      <li><a href="#buttons">Кнопки</a></li>
+      <li><a href="#links">Ссылки</a></li>
+      <li><a href="#badges">Бейджи</a></li>
+      <li><a href="#eyebrow">Eyebrow</a></li>
+      <li><a href="#crumbs">Хлебные крошки</a></li>
+      <li><a href="#icons">Иконки</a></li>
+    </ul>
+    <h4>Блоки</h4>
+    <ul>
+      <li><a href="#hero">Hero раздела</a></li>
+      <li><a href="#prose">Длинный текст</a></li>
+      <li><a href="#callout">Callout</a></li>
+      <li><a href="#features">Feature-карточки</a></li>
+      <li><a href="#tools">Tool-row карточки</a></li>
+      <li><a href="#terminal">Терминал</a></li>
+      <li><a href="#pager">Пагинация</a></li>
+    </ul>
+    <h4>Шаблон</h4>
+    <ul><li><a href="#page">Страница раздела</a></li></ul>
+  </aside>
+
+  <div>
+  <!-- ═════════════════════════════════════════════════════════════════
+       INTRO
+       ═════════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" aria-labelledby="intro">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Дизайн-система</span>
+      <h1 class="ds-section__title" id="intro">НИИ. Чистый монохром, жёсткие тени, один красный акцент.</h1>
+      <p class="ds-section__lead">Один файл — все токены и компоненты. Открой и пользуйся как живым справочником: жми по любому токену чтобы скопировать значение, по любому коду чтобы скопировать сниппет. Для Remotion — ссылайся на CSS-переменные или продублируй их в JS-объект THEME (раздел Motion).</p>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       1. ТОКЕНЫ
+       ═════════════════════════════════════════════════════════════════ -->
+
+  <!--
+    ▸ ЧТО ЭТО     — палитра. 11 нейтральных + 1 акцент + 3 семантики + инверсная
+                    пара. Все цвета хранятся в --color-* и переключаются темой
+                    автоматически.
+    ▸ КОГДА       — bg, fg, surface на ВСЕХ блоках. Запрещено хардкодить hex.
+    ▸ КОМПОЗИЦИЯ  — типичное «лицо» страницы:
+                       background = --color-bg
+                       карточки   = --color-surface
+                       границы    = --color-border
+                       текст      = --color-fg / --color-fg-muted
+    ▸ НЕ ДЕЛАТЬ   — не используй больше одного акцента на экран. Не миксуй
+                    accent с warning/danger в одном CTA. Семантические цвета
+                    только в callout/badge — не в фонах больших секций.
+  -->
+  <section class="ds-section" id="colors">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Токены · 01</span>
+      <h2 class="ds-section__title">Цвета</h2>
+      <p class="ds-section__lead">Чистая монохромная база (белый #FFFFFF, чёрный #0A0A0A). Один акцент — пожарно-красный #E5342B, для активных вкладок и ссылок. Семантика — только в callout и бейджах.</p>
+    </div>
+
+    <div class="ds-block">
+      <div class="ds-block__name">Поверхности и текст</div>
+      <div class="swatches">
+        <button class="swatch" data-copy="var(--color-bg)"           style="--_c: var(--color-bg)"><span class="swatch__chip" data-comment-anchor="1d9fa6e40a-span" style="background-color: rgb(255, 255, 255)"></span><span class="swatch__name">--color-bg</span><span class="swatch__val">#F7F6F2 → #0B0B09</span></button>
+        <button class="swatch" data-copy="var(--color-surface)"      style="--_c: var(--color-surface)"><span class="swatch__chip"></span><span class="swatch__name">--color-surface</span><span class="swatch__val">#FFFFFF → #141411</span></button>
+        <button class="swatch" data-copy="var(--color-surface-2)"    style="--_c: var(--color-surface-2)"><span class="swatch__chip"></span><span class="swatch__name">--color-surface-2</span><span class="swatch__val">#F1EFEA → #1C1C18</span></button>
+        <button class="swatch" data-copy="var(--color-fg)"           style="--_c: var(--color-fg)"><span class="swatch__chip"></span><span class="swatch__name">--color-fg</span><span class="swatch__val">#0E0E0C → #F2F0EA</span></button>
+        <button class="swatch" data-copy="var(--color-fg-muted)"     style="--_c: var(--color-fg-muted)"><span class="swatch__chip"></span><span class="swatch__name">--color-fg-muted</span><span class="swatch__val">#5C5A55 → #A6A39B</span></button>
+        <button class="swatch" data-copy="var(--color-fg-subtle)"    style="--_c: var(--color-fg-subtle)"><span class="swatch__chip"></span><span class="swatch__name">--color-fg-subtle</span><span class="swatch__val">#8A8780 → #6E6B63</span></button>
+        <button class="swatch" data-copy="var(--color-border)"       style="--_c: var(--color-border)"><span class="swatch__chip"></span><span class="swatch__name">--color-border</span><span class="swatch__val">#E4E1DA → #262521</span></button>
+        <button class="swatch" data-copy="var(--color-border-strong)" style="--_c: var(--color-border-strong)"><span class="swatch__chip"></span><span class="swatch__name">--color-border-strong</span><span class="swatch__val">#C9C5BC → #3A3833</span></button>
+      </div>
+    </div>
+
+    <div class="ds-block">
+      <div class="ds-block__name">Акцент и семантика</div>
+      <div class="swatches">
+        <button class="swatch" data-copy="var(--color-accent)"  style="--_c: var(--color-accent)"><span class="swatch__chip"></span><span class="swatch__name">--color-accent</span><span class="swatch__val">#2E6BFF → #6F95FF</span></button>
+        <button class="swatch" data-copy="var(--color-success)" style="--_c: var(--color-success)"><span class="swatch__chip"></span><span class="swatch__name">--color-success</span><span class="swatch__val">#1F8A5B</span></button>
+        <button class="swatch" data-copy="var(--color-warning)" style="--_c: var(--color-warning)"><span class="swatch__chip"></span><span class="swatch__name">--color-warning</span><span class="swatch__val">#C97A0A</span></button>
+        <button class="swatch" data-copy="var(--color-danger)"  style="--_c: var(--color-danger)"><span class="swatch__chip" data-comment-anchor="15106ce341-span"></span><span class="swatch__name">--color-danger</span><span class="swatch__val">#C83838</span></button>
+        <button class="swatch" data-copy="var(--color-inverse-bg)" style="--_c: var(--color-inverse-bg)"><span class="swatch__chip"></span><span class="swatch__name">--color-inverse-bg</span><span class="swatch__val">#0E0E0C</span></button>
+        <button class="swatch" data-copy="var(--color-inverse-fg)" style="--_c: var(--color-inverse-fg)"><span class="swatch__chip"></span><span class="swatch__name">--color-inverse-fg</span><span class="swatch__val">#E9E7E1</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — типографическая шкала. Один сан-сериф (Geist) + моноширинный
+                    (Geist Mono) для кода/терминала.
+    ▸ КОГДА       — везде. Никогда не задавай font-size напрямую — используй
+                    --fs-* и --lh-*.
+    ▸ ВАРИАНТЫ    — display(3xl/4xl) для больших экранов и hero, h1=2xl, h2=xl,
+                    h3=lg, lead=md, body=base, sm=eyebrow/мета, xs=сноски.
+    ▸ КОМПОЗИЦИЯ  — eyebrow(sm uppercase) → h1(2xl) → lead(md muted) — типичный
+                    тройной слой раздела.
+    ▸ НЕ ДЕЛАТЬ   — не выставляй вес >700; не используй italic для UI; не пиши
+                    body шрифтом меньше 14px.
+  -->
+  <section class="ds-section" id="typography">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Токены · 02</span>
+      <h2 class="ds-section__title">Типографика</h2>
+      <p class="ds-section__lead">Geist + Geist Mono. Шкала «major third» (×1.25). Tracking прижатый (-0.02em) на h1 и display, нейтральный на body, разреженный (+0.08em) на eyebrow uppercase.</p>
+    </div>
+
+    <div class="ds-stage">
+      <div class="type-row"><span class="type-row__label">display 4xl</span><span class="type-row__sample" style="font-size: var(--fs-4xl); line-height: var(--lh-4xl); letter-spacing: var(--tracking-tight); font-weight: 700;">847</span><span class="type-row__meta">88 / 92 · 700</span></div>
+      <div class="type-row"><span class="type-row__label">display 3xl</span><span class="type-row__sample" style="font-size: var(--fs-3xl); line-height: var(--lh-3xl); letter-spacing: var(--tracking-tight); font-weight: 700;">Агенты для кода</span><span class="type-row__meta">56 / 62 · 700</span></div>
+      <div class="type-row"><span class="type-row__label">h1 · 2xl</span><span class="type-row__sample" style="font-size: var(--fs-2xl); line-height: var(--lh-2xl); letter-spacing: var(--tracking-tight); font-weight: 700;">Заголовок страницы</span><span class="type-row__meta">36 / 44 · 700</span></div>
+      <div class="type-row"><span class="type-row__label">h2 · xl</span><span class="type-row__sample" style="font-size: var(--fs-xl); line-height: var(--lh-xl); font-weight: 700;">Заголовок секции</span><span class="type-row__meta">28 / 36 · 700</span></div>
+      <div class="type-row"><span class="type-row__label">h3 · lg</span><span class="type-row__sample" style="font-size: var(--fs-lg); line-height: var(--lh-lg); font-weight: 600;">Заголовок карточки</span><span class="type-row__meta">22 / 30 · 600</span></div>
+      <div class="type-row"><span class="type-row__label">lead · md</span><span class="type-row__sample" style="font-size: var(--fs-md); line-height: var(--lh-md); color: var(--color-fg-muted);">Лид под H1, чуть крупнее body, цвет muted.</span><span class="type-row__meta">18 / 28 · 400</span></div>
+      <div class="type-row"><span class="type-row__label">body · base</span><span class="type-row__sample" style="font-size: var(--fs-base); line-height: var(--lh-base);">Основной текст. На нём базируется всё чтение.</span><span class="type-row__meta">16 / 24 · 400</span></div>
+      <div class="type-row"><span class="type-row__label">sm</span><span class="type-row__sample" style="font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--color-fg-muted);">Метаданные, подписи, eyebrow.</span><span class="type-row__meta">13 / 18 · 400</span></div>
+      <div class="type-row"><span class="type-row__label">xs</span><span class="type-row__sample" style="font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--color-fg-subtle);">Сноски. Нижний предел.</span><span class="type-row__meta">12 / 16 · 400</span></div>
+      <div class="type-row"><span class="type-row__label">mono · base</span><span class="type-row__sample" style="font-family: var(--font-mono); font-size: var(--fs-base); line-height: var(--lh-base);">$ ls -la &amp;&amp; echo done</span><span class="type-row__meta">Geist Mono</span></div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — числовая шкала отступов и максимальные ширины контейнеров.
+    ▸ КОГДА       — везде. Любой margin/padding/gap = одно из значений.
+    ▸ ВАРИАНТЫ    — между плотными элементами (chip, кнопки в группе) — 8/12;
+                    внутри карточки — 16/24; между секциями страницы — 64–96.
+    ▸ НЕ ДЕЛАТЬ   — не используй 5/7/15px (вне шкалы). Не сжимай поля карточки
+                    меньше 16. Не растягивай контейнер чтения шире 760px —
+                    длинные строки ломают читаемость.
+  -->
+  <section class="ds-section" id="spacing">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Токены · 03</span>
+      <h2 class="ds-section__title">Сетка и отступы</h2>
+      <p class="ds-section__lead">База 4px. Контейнер чтения 760px, широкий — 1120px. Между секциями 64–96px.</p>
+    </div>
+    <div class="ds-stage">
+      <div class="scale-list">
+        <div class="scale-row"><span>--space-1</span><span class="scale-row__bar" style="width:4px"></span><span class="scale-row__val">4px</span></div>
+        <div class="scale-row"><span>--space-2</span><span class="scale-row__bar" style="width:8px"></span><span class="scale-row__val">8px</span></div>
+        <div class="scale-row"><span>--space-3</span><span class="scale-row__bar" style="width:12px"></span><span class="scale-row__val">12px</span></div>
+        <div class="scale-row"><span>--space-4</span><span class="scale-row__bar" style="width:16px"></span><span class="scale-row__val">16px</span></div>
+        <div class="scale-row"><span>--space-5</span><span class="scale-row__bar" style="width:20px"></span><span class="scale-row__val">20px</span></div>
+        <div class="scale-row"><span>--space-6</span><span class="scale-row__bar" style="width:24px"></span><span class="scale-row__val">24px</span></div>
+        <div class="scale-row"><span>--space-8</span><span class="scale-row__bar" style="width:32px"></span><span class="scale-row__val">32px</span></div>
+        <div class="scale-row"><span>--space-10</span><span class="scale-row__bar" style="width:40px"></span><span class="scale-row__val">40px</span></div>
+        <div class="scale-row"><span>--space-12</span><span class="scale-row__bar" style="width:48px"></span><span class="scale-row__val">48px</span></div>
+        <div class="scale-row"><span>--space-16</span><span class="scale-row__bar" style="width:64px"></span><span class="scale-row__val">64px</span></div>
+        <div class="scale-row"><span>--space-20</span><span class="scale-row__bar" style="width:80px"></span><span class="scale-row__val">80px</span></div>
+        <div class="scale-row"><span>--space-24</span><span class="scale-row__bar" style="width:96px" data-comment-anchor="2c8445ff93-span"></span><span class="scale-row__val">96px</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — радиусы. От 8 (мелкая UI-форма) до 999 (pill).
+    ▸ КОГДА       — кнопки=pill, поля ввода=md, карточки=lg, модал/терминал=xl.
+    ▸ НЕ ДЕЛАТЬ   — не миксуй разные радиусы в одном блоке (карточка 16,
+                    кнопка внутри неё 999 — нормально; кнопка 16 + поле 4 —
+                    нарушение). Не используй 4px и 24px без явной причины.
+  -->
+  <section class="ds-section" id="radii">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Токены · 04</span>
+      <h2 class="ds-section__title">Радиусы</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="radius-grid">
+        <div class="radius-tile" style="border-radius: var(--radius-sm)">sm · 8</div>
+        <div class="radius-tile" style="border-radius: var(--radius-md)">md · 12</div>
+        <div class="radius-tile" style="border-radius: var(--radius-lg)">lg · 16</div>
+        <div class="radius-tile" style="border-radius: var(--radius-xl)" data-comment-anchor="d61d198895-div">xl · 20</div>
+        <div class="radius-tile" style="border-radius: var(--radius-pill)">pill · 999</div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — тени. На light: 4 уровня. На dark: тени превращаются
+                    в рамки (см. [data-theme="dark"]).
+    ▸ КОГДА       — sm на любых статичных карточках, md — поднимаем на hover,
+                    lg — модалы и floating-панели. xs — почти невидимая,
+                    только под группой инпутов или плотным toolbar.
+    ▸ НЕ ДЕЛАТЬ   — не комбинируй несколько теней; не делай тени синие/цветные —
+                    только нейтральная rgba(15,15,15,.04…08).
+  -->
+  <section class="ds-section" id="shadows">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Токены · 05</span>
+      <h2 class="ds-section__title">Тени</h2>
+    </div>
+    <div class="ds-stage" data-comment-anchor="8184836212-div">
+      <div class="shadow-grid">
+        <div class="shadow-tile shadow-tile--xs">xs</div>
+        <div class="shadow-tile shadow-tile--sm">sm</div>
+        <div class="shadow-tile shadow-tile--md">md</div>
+        <div class="shadow-tile shadow-tile--lg">lg</div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — анимационные токены: 3 длительности, 3 easing.
+    ▸ КОГДА       — fast: hover/focus, base: появление и перестроения,
+                    slow: модалы и большие пере-композиции.
+    ▸ REMOTION    — fps 30. Конвертируй ms → frames: ms / (1000/fps).
+                    fast=4 кадра, base=7, slow=13.
+    ▸ НЕ ДЕЛАТЬ   — не используй ease-in для появлений (input делает их
+                    «вялыми»). Не делай анимаций > 500ms на UI.
+  -->
+  <section class="ds-section" id="motion">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Токены · 06</span>
+      <h2 class="ds-section__title">Motion</h2>
+      <p class="ds-section__lead">Стандартный «вход» — 220ms ease-out. В Remotion это 7 кадров при 30 fps.</p>
+    </div>
+    <div class="ds-stage">
+      <div class="ds-meta" style="font-size: 13px;">
+        <div class="ds-meta__row"><dt>fast</dt><dd><span class="copy" data-copy="120ms">120ms</span> · hover, focus</dd></div>
+        <div class="ds-meta__row"><dt>base</dt><dd><span class="copy" data-copy="220ms">220ms</span> · появление, перестроение</dd></div>
+        <div class="ds-meta__row"><dt>slow</dt><dd><span class="copy" data-copy="420ms">420ms</span> · модалы, большие сцены</dd></div>
+        <div class="ds-meta__row"><dt>ease-out</dt><dd><span class="copy" data-copy="cubic-bezier(0.22, 1, 0.36, 1)">cubic-bezier(0.22, 1, 0.36, 1)</span> · вход</dd></div>
+        <div class="ds-meta__row"><dt>ease-in</dt><dd><span class="copy" data-copy="cubic-bezier(0.55, 0, 1, 0.45)">cubic-bezier(0.55, 0, 1, 0.45)</span> · уход</dd></div>
+        <div class="ds-meta__row"><dt>ease-in-out</dt><dd><span class="copy" data-copy="cubic-bezier(0.65, 0, 0.35, 1)">cubic-bezier(0.65, 0, 0.35, 1)</span> · акценты</dd></div>
+      </div>
+      <pre class="copy-block" style="margin-top: var(--space-4);" data-copy='// Remotion theme bridge
+const THEME = {
+  fps: 30,
+  dur: { fast: 4, base: 7, slow: 13 },     // в кадрах
+  ease: {
+    out:    [0.22, 1, 0.36, 1],
+    in:     [0.55, 0, 1, 0.45],
+    inOut:  [0.65, 0, 0.35, 1]
+  },
+  color: {
+    bg:        "#FFFFFF",
+    surface:   "#FFFFFF",
+    fg:        "#0A0A0A",
+    fgMuted:   "#555555",
+    border:    "#E5E5E5",
+    accent:    "#E5342B",
+    inverseBg: "#0A0A0A",
+    inverseFg: "#F4F4F4",
+  },
+  shadow: {
+    xs: "2px 2px 0 0 #0A0A0A",
+    sm: "3px 3px 0 0 #0A0A0A",
+    md: "5px 5px 0 0 #0A0A0A",
+    lg: "8px 8px 0 0 #0A0A0A"
+  },
+  font: { sans: "Geist", mono: "Geist Mono" }
+};</pre>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       2. АТОМЫ
+       ═════════════════════════════════════════════════════════════════ -->
+
+  <!--
+    ▸ ЧТО ЭТО     — кнопки. Pill-форма. Один primary (чёрный) на блок.
+    ▸ ВАРИАНТЫ    — primary | secondary | ghost | accent | danger.
+                    Размеры: sm (chip-row, тесные toolbars), default, lg (hero).
+                    .btn--icon — квадратная 36×36, только иконка.
+    ▸ КОМПОЗИЦИЯ  — primary справа, secondary слева, ghost в гирлянде. Иконка
+                    идёт ПЕРЕД текстом (16×14, line-icons). После текста —
+                    только chevron / external-link.
+    ▸ НЕ ДЕЛАТЬ   — два primary рядом; кнопка с border-radius меньше pill;
+                    чёрная кнопка на тёмной теме (там используется --color-fg
+                    которая инвертируется автоматически — НЕ хардкодь #000).
+  -->
+  <section class="ds-section" id="atoms">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Атомы · 01</span>
+      <h2 class="ds-section__title" id="buttons">Кнопки</h2>
+    </div>
+    <div class="ds-stage" style="display:flex; flex-wrap:wrap; gap: var(--space-3); align-items:center;">
+      <button class="btn btn--primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.6 12a9 9 0 1 1-9-9"/><path d="m9 12 2.5 2.5L22 4"/></svg>
+        Телеграм-канал
+      </button>
+      <button class="btn btn--secondary">Вторичная</button>
+      <button class="btn btn--ghost">Ghost</button>
+      <button class="btn btn--accent">Accent</button>
+      <button class="btn btn--danger">Удалить</button>
+      <button class="btn btn--secondary btn--sm">Small</button>
+      <button class="btn btn--primary btn--lg">Large CTA</button>
+      <button class="btn btn--secondary btn--icon" aria-label="Открыть">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+      </button>
+    </div>
+    <pre class="copy-block" style="margin-top: var(--space-4);" data-copy='&lt;button class="btn btn--primary"&gt;CTA&lt;/button&gt;
+&lt;button class="btn btn--secondary"&gt;Secondary&lt;/button&gt;
+&lt;button class="btn btn--ghost"&gt;Ghost&lt;/button&gt;</pre>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — текстовые ссылки внутри текста. Подчёркивание тонкой
+                    серой линией всегда, при hover — становится чёрной.
+    ▸ ВАРИАНТЫ    — .link (нейтральная), .link--accent (синяя для важных
+                    переходов: «открыть», «подробнее»).
+    ▸ НЕ ДЕЛАТЬ   — не подчёркивай ссылку синим — синим только текст
+                    .link--accent. Не делай ссылки болдом «для важности».
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Атомы · 02</span>
+      <h2 class="ds-section__title" id="links">Ссылки</h2>
+    </div>
+    <div class="ds-stage" style="font-size: var(--fs-base); line-height: var(--lh-base);">
+      Самый простой вход — <a class="link" href="#">Claude Code</a>. Установи, дай задачу на русском языке, посмотри что получится. Подробнее — <a class="link link--accent" href="#">в нашем гайде</a>.
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — бейджи / pill-метки.
+    ▸ КОГДА       — статус («Бесплатно», «Open-source»), рекомендация
+                    («Рекомендуем»), мета (цена в строке инструмента).
+    ▸ ВАРИАНТЫ    — neutral (по умолч.), solid (чёрный), accent, success,
+                    warning. .badge--dot — с цветной точкой слева.
+    ▸ НЕ ДЕЛАТЬ   — не более 1 solid-бейджа на карточку; не используй
+                    danger в качестве «новинки» — это ассоциация с ошибкой.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Атомы · 03</span>
+      <h2 class="ds-section__title" id="badges">Бейджи</h2>
+    </div>
+    <div class="ds-stage" style="display:flex; gap: var(--space-2); flex-wrap: wrap;">
+      <span class="badge">Neutral</span>
+      <span class="badge badge--solid">Рекомендуем</span>
+      <span class="badge badge--accent">Beta</span>
+      <span class="badge badge--success badge--dot">Online</span>
+      <span class="badge badge--warning">Платно</span>
+      <span class="badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v6M12 22v-6M22 12h-6M2 12h6"/></svg>$20/мес</span>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — eyebrow: маленькая uppercase-метка над h1/h2.
+    ▸ КОГДА       — обозначает категорию или номер раздела.
+    ▸ КОМПОЗИЦИЯ  — eyebrow → h1/h2 → lead (см. блок «Hero раздела»).
+    ▸ НЕ ДЕЛАТЬ   — не используй eyebrow без последующего заголовка.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Атомы · 04</span>
+      <h2 class="ds-section__title" id="eyebrow">Eyebrow</h2>
+    </div>
+    <div class="ds-stage">
+      <span class="eyebrow">Тип агента</span>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — навигационные хлебные крошки.
+    ▸ КОГДА       — на любой внутренней странице. Не на главной.
+    ▸ КОМПОЗИЦИЯ  — стоят НАД hero-блоком, всегда первая строка контента.
+    ▸ НЕ ДЕЛАТЬ   — не более 4 уровней; не дублируй название текущей
+                    страницы в крошках и в h1 — крошка-current даёт уровень,
+                    h1 даёт смысл.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Атомы · 05</span>
+      <h2 class="ds-section__title" id="crumbs">Хлебные крошки</h2>
+    </div>
+    <div class="ds-stage">
+      <nav class="crumbs" aria-label="Хлебные крошки">
+        <a href="#">Главная</a>
+        <span class="crumbs__sep">›</span>
+        <a href="#">ИИ-агент</a>
+        <span class="crumbs__sep">›</span>
+        <span class="crumbs__current">Агенты для кода</span>
+      </nav>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — иконочный набор. Один stroke, weight 2, line-cap round.
+                    24×24 viewBox, рендерится 14–22px по месту.
+    ▸ КОГДА       — внутри кнопок, в icon-frame, в шапках карточек.
+    ▸ ИСПОЛЬЗОВАНИЕ — клик по тайлу копирует SVG-разметку в буфер.
+                      Иконка наследует currentColor, цвет ставь у родителя.
+    ▸ НЕ ДЕЛАТЬ   — не используй filled-варианты вперемешку со stroke;
+                    не вставляй emoji вместо иконок; не масштабируй <22px.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Атомы · 06</span>
+      <h2 class="ds-section__title" id="icons">Иконки</h2>
+      <p class="ds-section__lead">Stroke 2, line-round, 24×24. Кликни по тайлу — SVG скопируется в буфер.</p>
+    </div>
+    <div class="ds-stage">
+      <div class="icon-grid" id="iconGrid">
+        <!-- Иконки JS-генерируются ниже из словаря ICONS, чтобы не дублировать SVG -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       3. БЛОКИ
+       ═════════════════════════════════════════════════════════════════ -->
+
+  <!--
+    ▸ ЧТО ЭТО     — Hero раздела. Eyebrow + h1 + lead. Возможен icon-frame
+                    над eyebrow для визуального якоря категории.
+    ▸ КОГДА       — самый верх любой внутренней страницы (после крошек).
+    ▸ ВАРИАНТЫ    — без icon-frame (текстовый), с icon-frame, с правым CTA
+                    (если страница продающая).
+    ▸ КОМПОЗИЦИЯ  — Hero → hr → prose-блок. Расстояние Hero ↓ hr = space-10.
+    ▸ НЕ ДЕЛАТЬ   — не центруй текст; не делай h1 длиннее 8 слов; не дублируй
+                    содержимое eyebrow в h1.
+  -->
+  <section class="ds-section" id="blocks">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Блоки · 01</span>
+      <h2 class="ds-section__title" id="hero">Hero раздела</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="icon-frame" aria-hidden="true" style="margin-bottom: var(--space-6);">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>
+      </div>
+      <div class="hero">
+        <span class="eyebrow">Тип агента</span>
+        <h1 class="hero__title">Агенты для кода</h1>
+        <p class="hero__lead">Название обманчиво. Да, они пишут код. Но главное — у них есть доступ к командной строке и файловой системе.</p>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — длинный текст («prose»). Заголовок h2/h3 + параграфы +
+                    списки + bold-акценты.
+    ▸ КОГДА       — основная статья / описание раздела.
+    ▸ КОМПОЗИЦИЯ  — ширина не более 65ch, всегда align-left. Между prose-блоком
+                    и callout оставляй space-6.
+    ▸ НЕ ДЕЛАТЬ   — не выделяй цветом «для красоты» — только bold или ссылка.
+                    Не пиши параграфы длиннее 4–5 строк подряд: разбивай.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Блоки · 02</span>
+      <h2 class="ds-section__title" id="prose">Длинный текст</h2>
+    </div>
+    <div class="ds-stage">
+      <article class="prose">
+        <h2>Не только для разработчиков</h2>
+        <p>«Агент для кода» звучит страшно, если ты не программист. Но подумай иначе: это ИИ, который умеет не просто отвечать — а делать вещи прямо на твоём компьютере.</p>
+        <p>У него есть доступ к терминалу. Он может создавать, переименовывать и перемещать файлы. Запускать программы. Устанавливать что-то. Конвертировать форматы. И да, <strong>писать код</strong> — но это лишь одно из умений.</p>
+      </article>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — выделенный info-блок. Подсвечивает ключевую мысль или
+                    предупреждение.
+    ▸ ВАРИАНТЫ    — neutral (по умолч.), accent (важная мысль), warning
+                    (внимание/риск).
+    ▸ КОГДА       — раз в 2–3 экрана текста, не чаще. Иначе теряет вес.
+    ▸ КОМПОЗИЦИЯ  — ставится между prose-абзацами. Внутри — короткий тезис
+                    (1–3 строки), без заголовка.
+    ▸ НЕ ДЕЛАТЬ   — не клади несколько callout подряд; не используй
+                    danger-callout как декорацию — только реальные риски.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Блоки · 03</span>
+      <h2 class="ds-section__title" id="callout">Callout</h2>
+    </div>
+    <div class="ds-stage" style="display:grid; gap: var(--space-3);">
+      <div class="callout">
+        Обычный ИИ-чат даёт тебе текст. <strong>Агент для кода даёт результат</strong> — готовый файл, выполненную задачу, работающий скрипт.
+      </div>
+      <div class="callout callout--accent">
+        Самый простой вход — <strong>Claude Code</strong>. Не нужно знать терминал — агент сам разберётся.
+      </div>
+      <div class="callout callout--warning">
+        Перед первым запуском убедись, что у тебя бэкап важных папок. Агент работает с файловой системой напрямую.
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — Feature-карточки в 2-колоночной сетке. На карточке —
+                    иконка вверху, заголовок, короткое описание.
+    ▸ КОГДА       — список «что умеет», «возможности», 2–6 пунктов.
+    ▸ ВАРИАНТЫ    — обычно 2 колонки на десктопе, 1 на мобильном (auto).
+                    Если пунктов 3 — допустима 3-колоночная сетка
+                    (поправь grid-template-columns).
+    ▸ КОМПОЗИЦИЯ  — над сеткой ставь section-title (h2.xl). Между h2 и сеткой
+                    space-6.
+    ▸ НЕ ДЕЛАТЬ   — не делай карточки разной высоты, выравнивая по ним грид
+                    (используй align-content:start). Не пиши описание длиннее
+                    3 строк — это карточка, не статья.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Блоки · 04</span>
+      <h2 class="ds-section__title" id="features">Feature-карточки</h2>
+    </div>
+    <div class="ds-stage ds-stage--alt">
+      <h3 style="font-size: var(--fs-lg); line-height: var(--lh-lg); margin-bottom: var(--space-5);">Что может сделать агент для кода без программирования</h3>
+      <div class="feature-grid">
+        <article class="feature">
+          <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          <h4 class="feature__title">Работа с файлами</h4>
+          <p class="feature__desc">Переименовать 500 фотографий по дате съёмки. Отсортировать папку загрузок по типу файлов. Найти дубликаты.</p>
+        </article>
+        <article class="feature">
+          <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/></svg>
+          <h4 class="feature__title">Конвертация медиа</h4>
+          <p class="feature__desc">«Сожми все видео в папке до 720p» — агент устанавливает ffmpeg и делает это без твоего участия.</p>
+        </article>
+        <article class="feature">
+          <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <h4 class="feature__title">Таблицы и данные</h4>
+          <p class="feature__desc">Объединить 20 Excel-файлов в один. Построить график из CSV. Очистить данные от дубликатов и пустых строк.</p>
+        </article>
+        <article class="feature">
+          <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          <h4 class="feature__title">Автоматизация</h4>
+          <p class="feature__desc">«Каждое утро в 9:00 присылай мне сводку погоды» — агент пишет скрипт и настраивает расписание.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — широкая карточка-строка для списка инструментов / тарифов /
+                    интеграций. Иконка-аватар слева, текст по центру, бейдж
+                    рекомендации (опц.) и иконка действия справа.
+    ▸ КОГДА       — каталоги (инструменты, плагины, тарифы). 3–10 строк
+                    на блок, дальше — пагинация.
+    ▸ КОМПОЗИЦИЯ  — группируй строки заголовками-eyebrow («Топ для начала»,
+                    «Открытый код»). Пробел между группами — space-8.
+    ▸ НЕ ДЕЛАТЬ   — не превращай в таблицу с 5+ колонками — будет нечитаемо
+                    на mobile. Если нужны колонки — сделай отдельный блок-таблицу.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Блоки · 05</span>
+      <h2 class="ds-section__title" id="tools">Tool-row карточки</h2>
+    </div>
+    <div class="ds-stage ds-stage--alt">
+      <div class="eyebrow" style="margin-bottom: var(--space-3);">Топ для начала</div>
+      <div>
+        <article class="tool-row">
+          <div class="tool-row__avatar" style="background: #FFE7D6; color: #C24A0E;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+          </div>
+          <div>
+            <div class="tool-row__title">Claude Code</div>
+            <div class="tool-row__desc">CLI-агент от Anthropic. Работает в терминале, имеет доступ к файлам и командам. Понимает контекст всего проекта · $20+/мес</div>
+          </div>
+          <span class="badge badge--solid">Рекомендуем</span>
+          <a href="#" class="tool-row__action" aria-label="Открыть">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </a>
+        </article>
+        <article class="tool-row">
+          <div class="tool-row__avatar" style="background: var(--color-accent); color: var(--color-accent-fg);">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18 22 12 16 6M8 6 2 12l6 6"/></svg>
+          </div>
+          <div>
+            <div class="tool-row__title">GitHub Copilot Workspace</div>
+            <div class="tool-row__desc">Планирует и реализует задачи прямо из issue на GitHub. Показывает план изменений перед выполнением · $10+/мес</div>
+          </div>
+          <span></span>
+          <a href="#" class="tool-row__action" aria-label="Открыть">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </a>
+        </article>
+        <article class="tool-row">
+          <div class="tool-row__avatar" style="background: #1C1C18; color: #E9E7E1;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+          </div>
+          <div>
+            <div class="tool-row__title">Devin</div>
+            <div class="tool-row__desc">«Первый ИИ-инженер» — получает задачу и работает автономно часами. Имеет свой браузер, терминал и IDE · $500/мес</div>
+          </div>
+          <span></span>
+          <a href="#" class="tool-row__action" aria-label="Открыть">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+          </a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — терминал-блок с иммитацией сессии. Тёмный, моноширинный.
+    ▸ КОГДА       — показать «как агент думает шаг-за-шагом», шеллскрипт,
+                    лог выполнения.
+    ▸ ВАРИАНТЫ    — с баром (3 точки + title) или без. С таб-баром.
+    ▸ КОМПОЗИЦИЯ  — внутри ds-stage--alt смотрится контрастно. Спец-классы:
+                       .prompt — серая мета (комментарий)
+                       .cmd    — белый — то что вводит пользователь/агент
+                       .out    — приглушённый вывод
+                       .ok     — зелёный (успех)
+                       .arr    — строка с префиксом «→ »
+    ▸ REMOTION    — печатай строки последовательно с задержкой 4–6 кадров
+                    между ними; используй easing «out» только для контейнера,
+                    сами строки появляются instant (так читается терминал).
+    ▸ НЕ ДЕЛАТЬ   — не используй цветную подсветку синтаксиса (это не редактор).
+                    Не вставляй emoji внутри терминала.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Блоки · 06</span>
+      <h2 class="ds-section__title" id="terminal">Терминал</h2>
+    </div>
+    <div class="ds-stage ds-stage--alt">
+      <div class="terminal" role="img" aria-label="Сессия терминала">
+        <div class="terminal__bar">
+          <span class="terminal__dot terminal__dot--r"></span>
+          <span class="terminal__dot terminal__dot--y"></span>
+          <span class="terminal__dot terminal__dot--g"></span>
+          <span class="terminal__title">~/Downloads — opencode</span>
+        </div>
+        <div class="terminal__body">
+<span class="prompt">Задача:</span> <span class="cmd">"Переименуй все JPEG в папке ~/Downloads/photos по шаблону YYYY-MM-DD_N"</span>
+
+<span class="arr out">ls ~/Downloads/photos          # смотрит что есть</span>
+<span class="arr out">exiftool -DateTimeOriginal ... # читает метаданные</span>
+<span class="arr out">mv IMG_4521.jpg 2024-03-15_1.jpg</span>
+<span class="arr out">mv IMG_4522.jpg 2024-03-15_2.jpg</span>
+<span class="out">...</span>
+<span class="arr ok">"Готово. Переименовано 847 файлов."</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — пагинация prev/next между страницами раздела.
+    ▸ КОГДА       — низ страницы, перед футером, на мульти-страничных
+                    лендингах/гайдах.
+    ▸ КОМПОЗИЦИЯ  — prev (secondary) ↤ слева, next (primary) ↦ справа.
+                    Внутри кнопки: иконка + название следующего/предыдущего
+                    раздела (НЕ просто «Назад»/«Далее»).
+    ▸ НЕ ДЕЛАТЬ   — не центруй кнопки; не используй ghost — слабая
+                    кликабельность.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Блоки · 07</span>
+      <h2 class="ds-section__title" id="pager">Пагинация</h2>
+    </div>
+    <div class="ds-stage ds-stage--alt">
+      <nav class="pager" aria-label="Между разделами">
+        <a href="#" class="pager__btn pager__btn--prev">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          Браузерные агенты
+        </a>
+        <a href="#" class="pager__btn pager__btn--next">
+          Агенты-исследователи
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       4. ШАБЛОН: страница раздела целиком
+       ═════════════════════════════════════════════════════════════════ -->
+
+  <!--
+    ▸ ЧТО ЭТО     — собранный шаблон страницы. Показывает «канон композиции»:
+                    в каком порядке должны идти блоки и какие между ними
+                    дистанции.
+    ▸ КОГДА       — открой как референс, когда верстаешь новую страницу
+                    раздела. Скопируй структуру и заменяй контент.
+    ▸ ПОРЯДОК     — crumbs → icon-frame → eyebrow → h1 → lead → hr → prose →
+                    callout → h2.section → feature-grid → h2.section →
+                    terminal → h2.section → tool-rows → callout → pager.
+                    Между большими секциями — space-16.
+    ▸ НЕ ДЕЛАТЬ   — не вставляй callout в начало (читатель ещё не знает
+                    зачем); не клади terminal до того, как объяснил, что
+                    показываешь.
+  -->
+  <section class="ds-section" id="templates">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">Шаблон</span>
+      <h2 class="ds-section__title" id="page">Страница раздела целиком</h2>
+      <p class="ds-section__lead">Собрано из всех блоков выше. Эта же композиция — образец для Remotion-сцен: каждая «секция» = одна сцена, переходы между ними по 7 кадров, fade + translateY 12px.</p>
+    </div>
+
+    <div class="ds-stage ds-stage--bare">
+      <div class="page-template" style="padding: var(--space-10) var(--space-8); background: var(--color-bg);">
+        <nav class="crumbs" aria-label="Хлебные крошки">
+          <a href="#">Главная</a><span class="crumbs__sep">›</span>
+          <a href="#">ИИ-агент</a><span class="crumbs__sep">›</span>
+          <span class="crumbs__current">Агенты для кода</span>
+        </nav>
+
+        <div>
+          <div class="icon-frame" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>
+          </div>
+        </div>
+
+        <div class="hero">
+          <span class="eyebrow">Тип агента</span>
+          <h1 class="hero__title">Агенты для кода</h1>
+          <p class="hero__lead">Название обманчиво. Да, они пишут код. Но главное — у них есть доступ к командной строке и файловой системе.</p>
+        </div>
+
+        <hr />
+
+        <article class="prose">
+          <h2>Не только для разработчиков</h2>
+          <p>«Агент для кода» звучит страшно, если ты не программист. Но подумай иначе: это ИИ, который умеет не просто отвечать — а делать вещи прямо на твоём компьютере.</p>
+          <p>У него есть доступ к терминалу. Он может создавать, переименовывать и перемещать файлы. Запускать программы. Устанавливать что-то. Конвертировать форматы. И да, <strong>писать код</strong> — но это лишь одно из умений.</p>
+          <div class="callout">Обычный ИИ-чат даёт тебе текст. <strong>Агент для кода даёт результат</strong> — готовый файл, выполненную задачу, работающий скрипт.</div>
+        </article>
+
+        <section>
+          <h2 style="font-size: var(--fs-xl); line-height: var(--lh-xl); margin-bottom: var(--space-5);">Что может сделать агент для кода без программирования</h2>
+          <div class="feature-grid">
+            <article class="feature">
+              <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+              <h4 class="feature__title">Работа с файлами</h4>
+              <p class="feature__desc">Переименовать 500 фотографий по дате съёмки. Отсортировать папку загрузок по типу. Найти дубликаты.</p>
+            </article>
+            <article class="feature">
+              <svg class="feature__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/></svg>
+              <h4 class="feature__title">Конвертация медиа</h4>
+              <p class="feature__desc">«Сожми все видео в папке до 720p» — агент устанавливает ffmpeg и делает это без твоего участия.</p>
+            </article>
+          </div>
+        </section>
+
+        <section>
+          <h2 style="font-size: var(--fs-xl); line-height: var(--lh-xl); margin-bottom: var(--space-3);">Как это работает</h2>
+          <p style="color: var(--color-fg-muted); margin-bottom: var(--space-5); max-width: 60ch;">Агент получает задачу и начинает действовать шаг за шагом. Он сам решает, какие команды запустить, проверяет результат и при ошибке корректирует подход.</p>
+          <div class="terminal">
+            <div class="terminal__bar">
+              <span class="terminal__dot terminal__dot--r"></span>
+              <span class="terminal__dot terminal__dot--y"></span>
+              <span class="terminal__dot terminal__dot--g"></span>
+              <span class="terminal__title">opencode · 117×44</span>
+            </div>
+            <div class="terminal__body">
+<span class="prompt">Задача:</span> <span class="cmd">"Переименуй все JPEG в папке ~/Downloads/photos по шаблону YYYY-MM-DD_N"</span>
+
+<span class="arr out">ls ~/Downloads/photos          # смотрит что есть</span>
+<span class="arr out">exiftool -DateTimeOriginal ...</span>
+<span class="arr out">mv IMG_4521.jpg 2024-03-15_1.jpg</span>
+<span class="arr out">mv IMG_4522.jpg 2024-03-15_2.jpg</span>
+<span class="arr ok">"Готово. Переименовано 847 файлов."</span>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2 style="font-size: var(--fs-xl); line-height: var(--lh-xl); margin-bottom: var(--space-2);">Инструменты</h2>
+          <div class="eyebrow" style="margin: var(--space-4) 0 var(--space-3);">Топ для начала</div>
+          <article class="tool-row">
+            <div class="tool-row__avatar" style="background: #FFE7D6; color: #C24A0E;">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+            </div>
+            <div>
+              <div class="tool-row__title">Claude Code</div>
+              <div class="tool-row__desc">CLI-агент от Anthropic. Работает в терминале · $20+/мес</div>
+            </div>
+            <span class="badge badge--solid">Рекомендуем</span>
+            <a href="#" class="tool-row__action" aria-label="Открыть">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </a>
+          </article>
+        </section>
+
+        <section>
+          <h2 style="font-size: var(--fs-xl); line-height: var(--lh-xl); margin-bottom: var(--space-3);">С чего начать</h2>
+          <div class="callout">Самый простой вход — <strong>Claude Code</strong>. Установи, дай задачу на русском языке, посмотри что получится. Не нужно знать терминал или программирование — агент сам разберётся.</div>
+        </section>
+
+        <nav class="pager" aria-label="Между разделами" style="margin-top: var(--space-6);">
+          <a href="#" class="pager__btn pager__btn--prev">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+            Браузерные агенты
+          </a>
+          <a href="#" class="pager__btn pager__btn--next">
+            Агенты-исследователи
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /.right-column -->
+</main>
+
+<!--
+  ▸ ЧТО ЭТО     — глобальный футер. Бренд + лёгкая нав + sign-off справа.
+  ▸ КОГДА       — каждый лендинг.
+  ▸ НЕ ДЕЛАТЬ   — не делай футер 4-колоночным mega-footer; в сайт-каталоге
+                  достаточно одной строки.
+-->
+<footer class="footer">
+  <div class="footer__inner">
+    <a href="#top" class="footer__brand">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>
+      </span>
+      НИИ — Дизайн-система
+    </a>
+    <nav class="footer__nav">
+      <a href="#tokens">Токены</a>
+      <a href="#atoms">Атомы</a>
+      <a href="#blocks">Блоки</a>
+      <a href="#templates">Шаблон</a>
+    </nav>
+    <span class="footer__by">v1.0 · обновлено 2026</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite">Скопировано</div>
+
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+   JS — ровно две вещи: переключатель темы и копирование по клику.
+   Ничего из остального компонента не зависит от JS — все блоки рендерятся
+   статически. Так и в Remotion: не тащи поведение, тащи разметку и токены.
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<script>
+  // ── Иконки. Один словарь, чтобы переиспользовать в каталоге ────────────
+  const ICONS = {
+    'sparkle':   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></svg>',
+    'code':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>',
+    'file':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+    'video':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/></svg>',
+    'table':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>',
+    'cog':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+    'arrow-up-right': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>',
+    'chevron-r': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
+    'chevron-l': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+    'plus':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
+    'check':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>',
+    'x':         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M6 18 18 6"/></svg>',
+    'info':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>',
+    'warn':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+    'send':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/></svg>',
+    'search':    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-5-5"/></svg>',
+    'play':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 4 14 8L6 20z"/></svg>',
+    'pause':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+    'sun':       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/></svg>',
+    'moon':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+    'mail':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="m2 7 10 7L22 7"/></svg>',
+    'link':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.5 1.5"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.5-1.5"/></svg>',
+    'user':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>',
+    'heart':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8z"/></svg>',
+    'star':      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 18l-5.9 3 1.2-6.5L2.5 9.9 9.1 9z"/></svg>',
+    'globe':     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>',
+  };
+
+  // ── Заполняем сетку иконок ─────────────────────────────────────────────
+  const grid = document.getElementById('iconGrid');
+  for (const [name, svg] of Object.entries(ICONS)) {
+    const el = document.createElement('button');
+    el.className = 'icon-tile';
+    el.setAttribute('data-copy', svg);
+    el.setAttribute('aria-label', `Скопировать иконку ${name}`);
+    el.innerHTML = `${svg}<span>${name}</span>`;
+    grid.appendChild(el);
+  }
+
+  // ── Копирование по клику ───────────────────────────────────────────────
+  const toast = document.getElementById('toast');
+  let toastTimer;
+  function showToast(text = 'Скопировано') {
+    toast.textContent = text;
+    toast.dataset.show = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { delete toast.dataset.show; }, 1400);
+  }
+  document.addEventListener('click', async (e) => {
+    const target = e.target.closest('[data-copy]');
+    if (!target) return;
+    const value = target.getAttribute('data-copy');
+    try {
+      await navigator.clipboard.writeText(value);
+      target.dataset.copied = '1';
+      setTimeout(() => delete target.dataset.copied, 900);
+      showToast('Скопировано: ' + value.slice(0, 48) + (value.length > 48 ? '…' : ''));
+    } catch {
+      showToast('Не удалось скопировать');
+    }
+  });
+
+  // ── Тема ───────────────────────────────────────────────────────────────
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeToggle');
+  const themeKnob = document.getElementById('themeKnob');
+  const themeLabel = document.getElementById('themeLabel');
+  function applyTheme(t) {
+    root.setAttribute('data-theme', t);
+    themeLabel.textContent = 'Тема: ' + t;
+    themeKnob.innerHTML = t === 'dark' ? ICONS['sun'] : ICONS['moon'];
+    try { localStorage.setItem('ds-theme', t); } catch {}
+  }
+  try {
+    const saved = localStorage.getItem('ds-theme');
+    if (saved) applyTheme(saved);
+    else applyTheme('light');
+  } catch { applyTheme('light'); }
+  themeBtn.addEventListener('click', () => {
+    applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 't' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+  });
+</script>
+</body>
+</html>
