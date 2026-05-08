@@ -214,14 +214,38 @@
               max-width: 1280px; margin: 0 auto; padding: var(--space-12) var(--space-6) var(--space-24); }
   @media (max-width: 880px) { .ds-shell { grid-template-columns: 1fr; gap: var(--space-8); } }
 
-  .ds-toc { position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start;
-            font-size: var(--fs-sm); }
-  .ds-toc h4 { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: var(--tracking-wide);
-               color: var(--color-fg-subtle); font-weight: var(--weight-medium); margin-bottom: var(--space-3); }
-  .ds-toc ul { list-style: none; margin: 0 0 var(--space-6); padding: 0; display: grid; gap: 2px; }
-  .ds-toc a  { display: block; padding: 6px 8px; border-radius: var(--radius-sm); color: var(--color-fg-muted); }
+  .ds-toc {
+    position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start;
+    font-size: var(--fs-sm);
+    max-height: calc(100vh - var(--header-h) - 48px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+  .ds-toc::-webkit-scrollbar { width: 4px; }
+  .ds-toc::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
+  .ds-toc details { border: 0; background: transparent; width: 100%; margin: 0 0 4px 0; padding: 0; }
+  .ds-toc details summary {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 8px; cursor: pointer; list-style: none;
+    font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--color-fg-subtle); font-weight: 500;
+    border-radius: var(--radius-sm); user-select: none;
+  }
+  .ds-toc details summary::-webkit-details-marker { display: none; }
+  .ds-toc details summary:hover { color: var(--color-fg); background: var(--color-surface-2); }
+  .ds-toc details summary::after {
+    content: ''; width: 7px; height: 7px; flex-shrink: 0;
+    border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg); transition: transform 0.15s; margin-right: 2px;
+  }
+  .ds-toc details[open] summary::after { transform: rotate(-135deg); margin-top: 3px; }
+  .ds-toc details[open] summary { color: var(--color-fg); }
+  .ds-toc ul { list-style: none; margin: 2px 0 2px 0; padding: 0 0 0 8px; display: grid; gap: 1px; }
+  .ds-toc a  { display: block; padding: 5px 8px; border-radius: var(--radius-sm); color: var(--color-fg-muted); text-decoration: none; }
   .ds-toc a:hover { color: var(--color-fg); background: var(--color-surface-2); }
-  @media (max-width: 880px) { .ds-toc { position: static; } }
+  .ds-toc a.toc-active { color: var(--color-fg); background: var(--color-surface-2); font-weight: 500; }
+  @media (max-width: 880px) { .ds-toc { position: static; max-height: none; overflow-y: visible; } }
 
   .ds-section + .ds-section { margin-top: var(--space-16); }
   .ds-section__head { margin-bottom: var(--space-6); }
@@ -866,6 +890,48 @@
   }
   .theme-toggle__knob svg { width: 12px; height: 12px; }
 
+  /* ═══ Icons page ═══════════════════════════════════════════════════ */
+  #icons-page { display: none; max-width: 1280px; margin: 0 auto; padding: var(--space-12) var(--space-6) var(--space-24); }
+  #icons-page.is-active { display: block; }
+  .ip-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+  .ip-cat-btn {
+    padding: 5px 12px; cursor: pointer;
+    background: transparent; border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    font: 500 12px/1 var(--font-sans); color: var(--color-fg-muted);
+  }
+  .ip-cat-btn:hover, .ip-cat-btn.active { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .ip-cat-section { margin-bottom: 36px; }
+  .ip-cat-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--color-border); }
+  .ip-cat-title { font: 600 12px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .ip-cat-count { font: 400 11px/1 var(--font-mono); color: var(--color-fg-subtle); }
+  .ip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
+  .ip-tile {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 14px 8px 10px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    cursor: pointer; user-select: none;
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .ip-tile:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-sm); }
+  .ip-tile:active { transform: translate(0,0); box-shadow: none; }
+  .ip-tile svg { width: 20px; height: 20px; }
+  .ip-tile .ip-ph { width: 20px; height: 20px; background: var(--color-surface-2); border-radius: 4px; }
+  .ip-tile__name { font: 400 9px/1.3 var(--font-mono); color: var(--color-fg-subtle); text-align: center; word-break: break-all; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ip-tile:hover .ip-tile__name { color: var(--color-fg); }
+  .ip-tile.copied { border-color: var(--color-accent); }
+  .ip-tile.copied svg { color: var(--color-accent); }
+  .ip-topbar { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .ip-topbar h2 { font: 600 20px/1 var(--font-sans); }
+  .ip-search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 360px; }
+  .ip-search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 15px; height: 15px; color: var(--color-fg-subtle); pointer-events: none; }
+  #ipSearch { width: 100%; padding: 8px 10px 8px 33px; font: 400 14px/1 var(--font-sans); color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); outline: none; }
+  #ipSearch:focus { box-shadow: var(--shadow-xs); transform: translate(-1px,-1px); }
+  #ipCount { font: 400 12px/1 var(--font-mono); color: var(--color-fg-subtle); white-space: nowrap; }
+  .ip-empty { text-align: center; padding: 60px 24px; color: var(--color-fg-subtle); font-size: 14px; }
+
   /* ═══════════════════════════════════════════════════════════════════
      UI · формы, статус, навигация, данные
      ═════════════════════════════════════════════════════════════════ */
@@ -1323,12 +1389,12 @@
       <span>НИИ&nbsp;— Дизайн-система</span>
     </a>
     <nav class="nav__list" aria-label="Разделы">
-      <a class="nav__item" href="#tokens"  aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>Токены</a>
+      <a class="nav__item" href="#colors"  aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>Токены</a>
       <a class="nav__item" href="#atoms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>Атомы</a>
       <a class="nav__item" href="#ui"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>UI</a>
       <a class="nav__item" href="#blocks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Блоки</a>
       <a class="nav__item" href="#templates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Шаблон</a>
-      <a class="nav__item" href="#motion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>Motion</a>
+      <a class="nav__item" href="#icons-page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h2M19 12h2M12 3v2M12 19v2M5.6 5.6l1.4 1.4M16.9 16.9l1.4 1.4M16.9 7.1l1.4-1.4M5.6 18.4l1.4-1.4"/></svg>Иконки</a>
     </nav>
     <button class="theme-toggle" id="themeToggle" aria-label="Сменить тему (T)">
       <span class="theme-toggle__knob" id="themeKnob">
@@ -1342,56 +1408,68 @@
 <main class="ds-shell" id="top">
   <!-- ─── Левый sticky-навигатор каталога ─────────────────────────── -->
   <aside class="ds-toc" aria-label="Содержание">
-    <h4>Токены</h4>
-    <ul>
-      <li><a href="#colors">Цвета</a></li>
-      <li><a href="#typography">Типографика</a></li>
-      <li><a href="#spacing">Сетка и отступы</a></li>
-      <li><a href="#radii">Радиусы</a></li>
-      <li><a href="#shadows">Тени</a></li>
-      <li><a href="#motion">Motion</a></li>
-    </ul>
-    <h4>Атомы</h4>
-    <ul>
-      <li><a href="#buttons">Кнопки</a></li>
-      <li><a href="#links">Ссылки</a></li>
-      <li><a href="#badges">Бейджи</a></li>
-      <li><a href="#eyebrow">Eyebrow</a></li>
-      <li><a href="#crumbs">Хлебные крошки</a></li>
-      <li><a href="#icons">Иконки</a></li>
-    </ul>
-    <h4>UI</h4>
-    <ul>
-      <li><a href="#inputs">Поля ввода</a></li>
-      <li><a href="#toggles">Тогглы</a></li>
-      <li><a href="#sliders">Слайдер</a></li>
-      <li><a href="#progress">Прогресс</a></li>
-      <li><a href="#alerts">Алерты</a></li>
-      <li><a href="#tooltip">Тултип</a></li>
-      <li><a href="#modal">Модалка</a></li>
-      <li><a href="#tabs">Табы и Segmented</a></li>
-      <li><a href="#menu">Dropdown-меню</a></li>
-      <li><a href="#stepsui">Шаги</a></li>
-      <li><a href="#avatars">Аватары и теги</a></li>
-      <li><a href="#kbd">Kbd и инлайн-код</a></li>
-      <li><a href="#table">Таблица</a></li>
-      <li><a href="#stats">KPI / Stat</a></li>
-      <li><a href="#accordion">Аккордеон</a></li>
-      <li><a href="#dropzone">Drop-zone</a></li>
-      <li><a href="#empty">Пустое состояние</a></li>
-    </ul>
-    <h4>Блоки</h4>
-    <ul>
-      <li><a href="#hero">Hero раздела</a></li>
-      <li><a href="#prose">Длинный текст</a></li>
-      <li><a href="#callout">Callout</a></li>
-      <li><a href="#features">Feature-карточки</a></li>
-      <li><a href="#tools">Tool-row карточки</a></li>
-      <li><a href="#terminal">Терминал</a></li>
-      <li><a href="#pager">Пагинация</a></li>
-    </ul>
-    <h4>Шаблон</h4>
-    <ul><li><a href="#page">Страница раздела</a></li></ul>
+    <details open>
+      <summary>Токены</summary>
+      <ul>
+        <li><a href="#colors">Цвета</a></li>
+        <li><a href="#typography">Типографика</a></li>
+        <li><a href="#spacing">Сетка и отступы</a></li>
+        <li><a href="#radii">Радиусы</a></li>
+        <li><a href="#shadows">Тени</a></li>
+        <li><a href="#motion">Motion</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>Атомы</summary>
+      <ul>
+        <li><a href="#buttons">Кнопки</a></li>
+        <li><a href="#links">Ссылки</a></li>
+        <li><a href="#badges">Бейджи</a></li>
+        <li><a href="#eyebrow">Eyebrow</a></li>
+        <li><a href="#crumbs">Хлебные крошки</a></li>
+        <li><a href="#icons">Иконки (inline)</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>UI</summary>
+      <ul>
+        <li><a href="#inputs">Поля ввода</a></li>
+        <li><a href="#toggles">Тогглы</a></li>
+        <li><a href="#sliders">Слайдер</a></li>
+        <li><a href="#progress">Прогресс</a></li>
+        <li><a href="#alerts">Алерты</a></li>
+        <li><a href="#tooltip">Тултип</a></li>
+        <li><a href="#modal">Модалка</a></li>
+        <li><a href="#tabs">Табы и Segmented</a></li>
+        <li><a href="#menu">Dropdown-меню</a></li>
+        <li><a href="#stepsui">Шаги</a></li>
+        <li><a href="#avatars">Аватары и теги</a></li>
+        <li><a href="#kbd">Kbd и инлайн-код</a></li>
+        <li><a href="#table">Таблица</a></li>
+        <li><a href="#stats">KPI / Stat</a></li>
+        <li><a href="#accordion">Аккордеон</a></li>
+        <li><a href="#dropzone">Drop-zone</a></li>
+        <li><a href="#empty">Пустое состояние</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>Блоки</summary>
+      <ul>
+        <li><a href="#hero">Hero раздела</a></li>
+        <li><a href="#prose">Длинный текст</a></li>
+        <li><a href="#callout">Callout</a></li>
+        <li><a href="#features">Feature-карточки</a></li>
+        <li><a href="#tools">Tool-row карточки</a></li>
+        <li><a href="#terminal">Терминал</a></li>
+        <li><a href="#pager">Пагинация</a></li>
+      </ul>
+    </details>
+    <details>
+      <summary>Шаблон</summary>
+      <ul>
+        <li><a href="#page">Страница раздела</a></li>
+      </ul>
+    </details>
   </aside>
 
   <div>
@@ -2910,6 +2988,27 @@
   </div>
 </footer>
 
+<!-- ═══════════════════════════════════════════════════════════════════
+     СТРАНИЦА ИКОНОК (coolicons v4.1, 442 SVG)
+     Открывается по клику «Иконки» в верхнем меню.
+     SVG-файлы лежат в icons/<Категория>/<Имя>.svg
+     Все иконки stroke="currentColor" — наследуют цвет из CSS.
+     Клик по тайлу — копирует SVG в буфер.
+     ═══════════════════════════════════════════════════════════════════ -->
+<div id="icons-page" role="main" aria-label="Витрина иконок">
+  <div class="ip-topbar">
+    <h2>Иконки</h2>
+    <div class="ip-search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="ipSearch" type="search" placeholder="Найти иконку…" autocomplete="off" spellcheck="false">
+    </div>
+    <span id="ipCount">442 иконки</span>
+    <a href="#" id="ipBack" class="btn btn--secondary btn--sm" style="margin-left: auto;">← Дизайн-система</a>
+  </div>
+  <nav class="ip-cats" id="ipCats" aria-label="Категории"></nav>
+  <div id="ipGrid"></div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite">Скопировано</div>
 
 <!--
@@ -3123,6 +3222,210 @@
       });
     }, { threshold: 0.4 });
     io.observe(document.getElementById('motion'));
+  })();
+
+  // ── Icons Page ──────────────────────────────────────────────────────────
+  const COOLICONS = {
+    "Arrow":["Arrow_Circle_Down","Arrow_Circle_Down_Left","Arrow_Circle_Down_Right","Arrow_Circle_Left","Arrow_Circle_Right","Arrow_Circle_Up","Arrow_Circle_Up_Left","Arrow_Circle_Up_Right","Arrow_Down","Arrow_Down_LG","Arrow_Down_Left","Arrow_Down_Left_LG","Arrow_Down_MD","Arrow_Down_Right","Arrow_Down_Right_LG","Arrow_Down_SM","Arrow_Left","Arrow_Left_LG","Arrow_Left_MD","Arrow_Left_SM","Arrow_Right","Arrow_Right_LG","Arrow_Right_MD","Arrow_Right_SM","Arrow_Sub_Down_Left","Arrow_Sub_Down_Right","Arrow_Sub_Left_Down","Arrow_Sub_Left_Up","Arrow_Sub_Right_Down","Arrow_Sub_Right_Up","Arrow_Sub_Up_Left","Arrow_Sub_Up_Right","Arrow_Up","Arrow_Up_LG","Arrow_Up_Left","Arrow_Up_Left_LG","Arrow_Up_MD","Arrow_Up_Right","Arrow_Up_Right_LG","Arrow_Up_SM","Caret_Down_MD","Caret_Down_SM","Caret_Left_MD","Caret_Left_SM","Caret_Right_MD","Caret_Right_SM","Caret_Up_MD","Caret_Up_SM","Chevron_Down","Chevron_Down_Duo","Chevron_Left","Chevron_Left_Duo","Chevron_Left_MD","Chevron_Right","Chevron_Right_Duo","Chevron_Right_MD","Chevron_Up","Chevron_Up_Duo","Expand","Shrink","Unfold_Less","Unfold_More","Arrows_Reload_01","Arrow_Reload_02","Arrow_Undo_Down_Left","Arrow_Undo_Down_Right","Arrow_Undo_Up_Left","Arrow_Undo_Up_Right","Caret_Circle_Down","Caret_Circle_Left","Caret_Circle_Right","Caret_Circle_Up"],
+    "Calendar":["Alarm","Calendar","Calendar_Add","Calendar_Check","Calendar_Close","Calendar_Days","Calendar_Event","Calendar_Remove","Calendar_Week","Clock","Timer","Timer_Add","Timer_Close","Timer_Remove"],
+    "Communication":["Bell","Bell_Add","Bell_Close","Bell_Notification","Bell_Off","Bell_Remove","Bell_Ring","Chat","Chat_Add","Chat_Check","Chat_Circle","Chat_Circle_Add","Chat_Circle_Check","Chat_Circle_Close","Chat_Circle_Dots","Chat_Circle_Remove","Chat_Close","Chat_Conversation","Chat_Conversation_Circle","Chat_Dots","Chat_Remove","Mail","Mail_Open","Paper_Plane","Phone","Share_Android","Share_iOS_Export"],
+    "Edit":["Add_Column","Add_Minus_Square","Add_Plus","Add_Plus_Circle","Add_Plus_Square","Add_Row","Add_To_Queue","Bold","Close_Circle","Close_Square","Columns","Combine_Cells","Copy","Crop","Delete_Column","Delete_Row","Double_Quotes_L","Double_Quotes_R","Edit_Pencil_01","Edit_Pencil_02","Edit_Pencil_Line_01","Edit_Pencil_Line_02","Figma","Font","Heading","Heading_H1","Heading_H2","Heading_H3","Heading_H4","Heading_H5","Heading_H6","Hide","Italic","Layer","Layers","List_Add","List_Check","List_Checklist","List_Ordered","List_Remove","List_Unordered","Mention","Move","Move_Horizontal","Move_Vertical","Paperclip_Attechment_Horizontal","Paperclip_Attechment_Tilt","Paragraph","Path","Redo","Remove_Minus","Remove_Minus_Circle","Rows","Ruler","Select_Multiple","Show","Single_Quotes_L","Single_Quotes_R","Sort_Ascending","Sort_Descending","Strikethrough","Swatches_Palette","Table","Table_Add","Table_Remove","Text","Text_Align_Center","Text_Align_Justify","Text_Align_Left","Text_Align_Right","Underline","Undo"],
+    "Environment":["Bulb","Coffe_To_Go","Coffee","Cookie","Cupcake","First_Aid","Leaf","Moon","Planet","Puzzle","Rainbow","Sun","Water_Drop"],
+    "File":["Archive","Cloud","Cloud_Add","Cloud_Check","Cloud_Close","Cloud_Download","Cloud_Off","Cloud_Remove","Cloud_Upload","Download_Package","File_Add","File_Blank","File_Check","File_Close","File_Code","File_Document","File_Download","File_Edit","File_Remove","File_Search","File_Upload","Files","Folder","Folder_Add","Folder_Check","Folder_Close","Folder_Code","Folder_Document","Folder_Download","Folder_Edit","Folder_Open","Folder_Remove","Folder_Search","Folder_Upload","Folders","Note","Note_Edit","Note_Search","Notebook"],
+    "Interface":["Book","Book_Open","Bookmark","Chart_Bar_Horizontal_01","Chart_Bar_Vertical_01","Chart_Line","Chart_Pie","Check","Check_All","Check_All_Big","Check_Big","Checkbox_Check","Checkbox_Fill","Checkbox_Unchecked","Command","Credit_Card_01","Credit_Card_02","Download","Drag_Horizontal","Drag_Vertical","Dummy_Circle","Dummy_Circle_Small","Dummy_Square","Dummy_Square_Small","Exit","External_Link","Filter","Filter_Off","Gift","Handbag","Heart_01","Heart_02","Instance","Label","Line_L","Line_M","Line_S","Line_Xl","Link","Link_Break","Link_Horizontal","Link_Horizontal_Off","Link_Vertical","Loading","Lock","Lock_Open","Log_Out","Magnifying_Glass_Minus","Magnifying_Glass_Plus","Main_Component","Option","Radio_Fill","Radio_Unchecked","Search_Magnifying_Glass","Settings","Settings_Future","Shopping_Bag_01","Shopping_Bag_02","Shopping_Cart_01","Shopping_Cart_02","Slider_01","Slider_02","Slider_03","Star","Suitcase","Swicht_Left","Swicht_Right","Tag","Ticket_Voucher","Trash_Empty","Trash_Full","Trending_Down","Trending_Up"],
+    "Media":["Airplay","Chromecast","Forward","Headphones","Image_01","Image_02","Pause","Pause_Circle","Play","Play_Circle","Rewind","Shuffle","Skip_Back","Skip_Forward","Stop","Stop_Circle","Volume_Max","Volume_Min","Volume_Minus","Volume_Off","Volume_Off_02","Volume_Plus"],
+    "Menu":["Close_LG","Close_MD","Close_SM","Hamburger_LG","Hamburger_MD","Menu_Alt_01","Menu_Alt_02","Menu_Alt_03","Menu_Alt_04","Menu_Alt_05","Menu_Duo_LG","Menu_Duo_MD","More_Grid_Big","More_Grid_Small","More_Horizontal","More_Vertical"],
+    "Navigation":["Building_01","Building_02","Building_03","Building_04","Car_Auto","Compass","Flag","Globe","House_01","House_02","House_03","House_Add","House_Check","House_Close","House_Remove","Map","Map_Pin","Navigation"],
+    "Shape":["Circle","Octagon","Shield","Square","Triangle","Wavy"],
+    "System":["Bar_Bottom","Bar_Left","Bar_Right","Bar_Top","Camera","Code","Cylinder","Data","Desktop","Desktop_Tower","Devices","Keyboard","Laptop","Mobile","Mobile_Button","Monitor","Monitor_Play","Mouse","Moving_Desk","Printer","Qr_Code","Save","Tablet","Tablet_Button","Terminal","Wifi_High","Wifi_Low","Wifi_Medium","Wifi_None","Wifi_Off","Wifi_Problem","Window","Window_Check","Window_Close","Window_Code_Block","Window_Sidebar","Window_Terminal"],
+    "User":["User_01","User_02","User_03","User_Add","User_Card_ID","User_Check","User_Circle","User_Close","User_Remove","User_Square","User_Voice","Users","Users_Group"],
+    "Warning":["Circle_Check","Circle_Help","Circle_Warning","Help","Info","Octagon_Check","Octagon_Help","Octagon_Warning","Shield_Check","Shield_Warning","Square_Check","Square_Help","Square_Warning","Stop_Sign","Triangle_Check","Triangle_Warning","Warning","Wavy_Check","Wavy_Help","Wavy_Warning"]
+  };
+
+  (() => {
+    const page    = document.getElementById('icons-page');
+    const mainEl  = document.getElementById('top');
+    const ipCats  = document.getElementById('ipCats');
+    const ipGrid  = document.getElementById('ipGrid');
+    const ipSearch = document.getElementById('ipSearch');
+    const ipCount = document.getElementById('ipCount');
+    const ipBack  = document.getElementById('ipBack');
+    if (!page) return;
+
+    let activeCat = 'all';
+    let searchQ   = '';
+    const svgCache = {};
+
+    const CATS = Object.keys(COOLICONS);
+    const totalAll = CATS.reduce((s, c) => s + COOLICONS[c].length, 0);
+
+    // Router
+    function showIconsPage(show) {
+      page.classList.toggle('is-active', show);
+      if (mainEl) mainEl.style.display = show ? 'none' : '';
+      if (show) { window.location.hash = 'icons-page'; renderIP(); }
+    }
+
+    // Nav link
+    document.querySelectorAll('a[href="#icons-page"]').forEach(a => {
+      a.addEventListener('click', e => { e.preventDefault(); showIconsPage(true); });
+    });
+    ipBack && ipBack.addEventListener('click', e => { e.preventDefault(); showIconsPage(false); history.replaceState(null,'',location.pathname); });
+
+    // On load check hash
+    if (location.hash === '#icons-page') showIconsPage(true);
+
+    // Build category buttons
+    const allBtn = document.createElement('button');
+    allBtn.className = 'ip-cat-btn active'; allBtn.dataset.cat = 'all';
+    allBtn.textContent = `Все (${totalAll})`;
+    ipCats.appendChild(allBtn);
+    CATS.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'ip-cat-btn'; btn.dataset.cat = cat;
+      btn.textContent = `${cat} (${COOLICONS[cat].length})`;
+      ipCats.appendChild(btn);
+    });
+    ipCats.addEventListener('click', e => {
+      const btn = e.target.closest('.ip-cat-btn');
+      if (!btn) return;
+      activeCat = btn.dataset.cat;
+      ipCats.querySelectorAll('.ip-cat-btn').forEach(b => b.classList.toggle('active', b === btn));
+      renderIP();
+    });
+
+    // Search
+    let debounce;
+    ipSearch && ipSearch.addEventListener('input', e => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => { searchQ = e.target.value; renderIP(); }, 100);
+    });
+
+    // Fetch & cache SVG
+    async function getSVG(cat, name) {
+      const key = `${cat}/${name}`;
+      if (svgCache[key]) return svgCache[key];
+      try {
+        const r = await fetch(`icons/${cat}/${name}.svg`);
+        if (!r.ok) return null;
+        const txt = await r.text();
+        const cleaned = txt
+          .replace(/<\?xml[^>]*\?>/g, '')
+          .replace(/width="\d+"/g, 'width="20"')
+          .replace(/height="\d+"/g, 'height="20"');
+        svgCache[key] = cleaned;
+        return cleaned;
+      } catch { return null; }
+    }
+
+    // Lazy render tile SVG
+    async function renderTile(tile) {
+      const { cat, name } = tile.dataset;
+      const svg = await getSVG(cat, name);
+      if (!svg) return;
+      const ph = tile.querySelector('.ip-ph');
+      if (ph) ph.outerHTML = svg;
+    }
+
+    // Copy icon
+    async function copyIcon(cat, name, tile) {
+      const svg = await getSVG(cat, name);
+      if (!svg) return;
+      try {
+        await navigator.clipboard.writeText(svg);
+        tile.classList.add('copied');
+        setTimeout(() => tile.classList.remove('copied'), 900);
+        showToast(`${name.replace(/_/g,' ')} скопирован`);
+      } catch { showToast('Не удалось скопировать'); }
+    }
+
+    // Render grid
+    function renderIP() {
+      const q = searchQ.toLowerCase().replace(/_/g,' ');
+      const catsToShow = activeCat === 'all' ? CATS : [activeCat];
+      let total = 0; const sections = [];
+      for (const cat of catsToShow) {
+        const icons = COOLICONS[cat].filter(n => !q || n.toLowerCase().replace(/_/g,' ').includes(q));
+        if (icons.length) { sections.push({ cat, icons }); total += icons.length; }
+      }
+      ipCount.textContent = total === totalAll ? `${totalAll} иконки` : `${total} из ${totalAll}`;
+      if (!sections.length) {
+        ipGrid.innerHTML = `<div class="ip-empty">Ничего не найдено по запросу «${searchQ}»</div>`;
+        return;
+      }
+      ipGrid.innerHTML = sections.map(({ cat, icons }) => `
+        <section class="ip-cat-section">
+          <div class="ip-cat-head"><span class="ip-cat-title">${cat}</span><span class="ip-cat-count">${icons.length}</span></div>
+          <div class="ip-grid">
+            ${icons.map(name => `
+              <button class="ip-tile" data-cat="${cat}" data-name="${name}" title="${name.replace(/_/g,' ')}">
+                <span class="ip-ph"></span>
+                <span class="ip-tile__name">${name.replace(/_/g,' ')}</span>
+              </button>`).join('')}
+          </div>
+        </section>`).join('');
+
+      // Lazy load via IntersectionObserver
+      const obs = new IntersectionObserver((entries) => {
+        for (const en of entries) {
+          if (en.isIntersecting) { renderTile(en.target); obs.unobserve(en.target); }
+        }
+      }, { rootMargin: '300px' });
+      ipGrid.querySelectorAll('.ip-tile').forEach(t => obs.observe(t));
+
+      // Click
+      ipGrid.querySelectorAll('.ip-tile').forEach(t => {
+        t.addEventListener('click', () => copyIcon(t.dataset.cat, t.dataset.name, t));
+      });
+    }
+  })();
+
+  // ── Sidebar: auto-open active group + highlight link ─────────────────────
+  (() => {
+    const toc = document.querySelector('.ds-toc');
+    if (!toc) return;
+    // Map every section id to its group details element
+    const sectionToGroup = {};
+    toc.querySelectorAll('details').forEach(det => {
+      det.querySelectorAll('a[href^="#"]').forEach(a => {
+        sectionToGroup[a.getAttribute('href').slice(1)] = det;
+      });
+    });
+
+    function setActive(id) {
+      // Deactivate all
+      toc.querySelectorAll('a').forEach(a => a.classList.remove('toc-active'));
+      toc.querySelectorAll('details').forEach(d => { if (!d.hasAttribute('data-user-open')) d.removeAttribute('open'); });
+      // Activate matching
+      const a = toc.querySelector(`a[href="#${id}"]`);
+      if (a) {
+        a.classList.add('toc-active');
+        const det = sectionToGroup[id];
+        if (det) det.setAttribute('open', '');
+      }
+    }
+
+    // Mark user-manually-opened
+    toc.querySelectorAll('details summary').forEach(s => {
+      s.addEventListener('click', () => {
+        const det = s.parentElement;
+        if (det.hasAttribute('open')) det.removeAttribute('data-user-open');
+        else det.setAttribute('data-user-open', '1');
+      });
+    });
+
+    // Observe all sections
+    const allAnchors = [...toc.querySelectorAll('a[href^="#"]')].map(a => a.getAttribute('href').slice(1));
+    let current = '';
+    const io = new IntersectionObserver((entries) => {
+      for (const en of entries) {
+        if (en.isIntersecting) { current = en.target.id; setActive(current); }
+      }
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    allAnchors.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    });
   })();
 
   // Defensive: strip unknown bare attributes that direct-edit replay can leave
