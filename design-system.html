@@ -865,6 +865,437 @@
     display: grid; place-items: center;
   }
   .theme-toggle__knob svg { width: 12px; height: 12px; }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     UI · формы, статус, навигация, данные
+     ═════════════════════════════════════════════════════════════════ */
+
+  /* Field wrapper */
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field__label { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--color-fg); font-weight: 500; }
+  .field__hint  { font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--color-fg-subtle); }
+  .field__error { font-size: var(--fs-xs); line-height: var(--lh-xs); color: var(--color-accent); }
+
+  /* Inputs */
+  .input, .textarea, .select__native {
+    font: 400 var(--fs-base)/var(--lh-base) var(--font-sans);
+    color: var(--color-fg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    padding: 10px 12px; width: 100%; outline: none;
+    transition: box-shadow var(--motion-fast) var(--ease-out),
+                transform   var(--motion-fast) var(--ease-out);
+  }
+  .input::placeholder, .textarea::placeholder { color: var(--color-fg-subtle); }
+  .input:hover, .textarea:hover, .select__native:hover { box-shadow: var(--shadow-xs); transform: translate(-1px,-1px); }
+  .input:focus, .textarea:focus, .select__native:focus { box-shadow: var(--shadow-sm); transform: translate(-1px,-1px); }
+  .input:disabled, .textarea:disabled, .select__native:disabled {
+    background: var(--color-surface-2); color: var(--color-fg-subtle);
+    cursor: not-allowed; box-shadow: none; transform: none;
+  }
+  .field--error .input, .field--error .textarea { border-color: var(--color-accent); }
+  .textarea { resize: vertical; min-height: 96px; font-family: var(--font-sans); }
+
+  .input-affix { position: relative; display: block; }
+  .input-affix > svg {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; color: var(--color-fg-subtle); pointer-events: none; left: 12px;
+  }
+  .input-affix .input { padding-left: 36px; }
+
+  .select { position: relative; display: block; }
+  .select__native {
+    appearance: none; -webkit-appearance: none; padding-right: 36px; cursor: pointer;
+    background-image:
+      linear-gradient(45deg,  transparent 50%, var(--color-fg) 50%),
+      linear-gradient(135deg, var(--color-fg) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  }
+
+  /* Checkbox */
+  .check { position: relative; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: var(--fs-base); color: var(--color-fg); }
+  .check input { position: absolute; opacity: 0; pointer-events: none; }
+  .check__box {
+    width: 18px; height: 18px; border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm); background: var(--color-surface);
+    display: grid; place-items: center; flex-shrink: 0;
+    transition: background var(--motion-fast) var(--ease-out), border-color var(--motion-fast) var(--ease-out);
+  }
+  .check__box svg { width: 12px; height: 12px; color: var(--color-accent-fg); opacity: 0; }
+  .check input:checked ~ .check__box { background: var(--color-accent); border-color: var(--color-accent); }
+  .check input:checked ~ .check__box svg { opacity: 1; }
+  .check input:focus-visible ~ .check__box { box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 45%, transparent); }
+  .check input:disabled ~ .check__box { background: var(--color-surface-2); border-color: var(--color-border); }
+
+  /* Radio */
+  .radio { position: relative; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: var(--fs-base); color: var(--color-fg); }
+  .radio input { position: absolute; opacity: 0; pointer-events: none; }
+  .radio__dot {
+    width: 18px; height: 18px; border: 1px solid var(--color-border-strong);
+    border-radius: 999px; background: var(--color-surface); flex-shrink: 0;
+    display: grid; place-items: center; transition: border-color var(--motion-fast) var(--ease-out);
+  }
+  .radio__dot::after { content: ''; width: 8px; height: 8px; border-radius: 999px; background: var(--color-accent); transform: scale(0); transition: transform var(--motion-fast) var(--ease-out); }
+  .radio input:checked ~ .radio__dot { border-color: var(--color-accent); }
+  .radio input:checked ~ .radio__dot::after { transform: scale(1); }
+  .radio input:focus-visible ~ .radio__dot { box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 45%, transparent); }
+
+  /* Switch */
+  .switch { position: relative; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: var(--fs-base); color: var(--color-fg); }
+  .switch input { position: absolute; opacity: 0; pointer-events: none; }
+  .switch__track {
+    width: 38px; height: 22px; background: var(--color-surface-2);
+    border: 1px solid var(--color-border-strong); border-radius: 999px;
+    position: relative; flex-shrink: 0;
+    transition: background var(--motion-base) var(--ease-out), border-color var(--motion-base) var(--ease-out);
+  }
+  .switch__track::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; background: var(--color-fg);
+    border-radius: 999px;
+    transition: transform var(--motion-base) var(--ease-out), background var(--motion-base) var(--ease-out);
+  }
+  .switch input:checked ~ .switch__track { background: var(--color-accent); border-color: var(--color-accent); }
+  .switch input:checked ~ .switch__track::after { transform: translateX(16px); background: var(--color-accent-fg); }
+  .switch input:focus-visible ~ .switch__track { box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-accent) 45%, transparent); }
+
+  /* Range */
+  .range { width: 100%; -webkit-appearance: none; appearance: none; background: transparent; height: 22px; }
+  .range::-webkit-slider-runnable-track { height: 4px; background: var(--color-border-strong); border-radius: 999px; }
+  .range::-moz-range-track            { height: 4px; background: var(--color-border-strong); border-radius: 999px; }
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px; border-radius: 999px;
+    background: var(--color-accent); border: 2px solid var(--color-fg);
+    margin-top: -8px; cursor: pointer; box-shadow: var(--shadow-xs);
+  }
+  .range::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 999px;
+    background: var(--color-accent); border: 2px solid var(--color-fg);
+    cursor: pointer; box-shadow: var(--shadow-xs);
+  }
+
+  /* Stepper (number) */
+  .stepper {
+    display: inline-flex; align-items: stretch;
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius-md);
+    background: var(--color-surface); overflow: hidden; box-shadow: var(--shadow-xs);
+  }
+  .stepper button {
+    width: 36px; background: transparent; border: 0; cursor: pointer;
+    font: 500 16px/1 var(--font-sans); color: var(--color-fg);
+  }
+  .stepper button:hover { background: var(--color-surface-2); }
+  .stepper input {
+    width: 56px; text-align: center; border: 0;
+    border-left: 1px solid var(--color-border); border-right: 1px solid var(--color-border);
+    background: var(--color-surface);
+    font: 500 var(--fs-base)/1 var(--font-mono); color: var(--color-fg); outline: none;
+    -moz-appearance: textfield;
+  }
+  .stepper input::-webkit-outer-spin-button,
+  .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Progress */
+  .progress {
+    width: 100%; height: 8px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 999px; overflow: hidden;
+  }
+  .progress__bar { height: 100%; background: var(--color-accent); transition: width var(--motion-base) var(--ease-out); }
+  .progress--lg { height: 14px; }
+  .progress--indeterminate .progress__bar {
+    width: 30% !important;
+    animation: progress-slide 1.4s var(--ease-in-out) infinite;
+  }
+  @keyframes progress-slide {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--color-border-strong);
+    border-top-color: var(--color-accent);
+    border-radius: 999px;
+    animation: spin 0.7s linear infinite;
+    display: inline-block; vertical-align: middle;
+  }
+  .spinner--lg { width: 32px; height: 32px; border-width: 3px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Skeleton */
+  .skeleton {
+    background: linear-gradient(90deg,
+      var(--color-surface-2) 0%,
+      color-mix(in oklch, var(--color-surface-2) 50%, var(--color-bg)) 50%,
+      var(--color-surface-2) 100%);
+    background-size: 200% 100%;
+    border-radius: var(--radius-sm);
+    animation: skeleton-shine 1.4s var(--ease-in-out) infinite;
+  }
+  @keyframes skeleton-shine {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton--text   { height: 12px; border-radius: 4px; }
+  .skeleton--title  { height: 22px; border-radius: 4px; }
+  .skeleton--avatar { width: 40px; height: 40px; border-radius: 999px; }
+
+  /* Alert */
+  .alert {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 14px; border: 1px solid var(--color-border-strong);
+    background: var(--color-surface); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
+  }
+  .alert__icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 3px; }
+  .alert__body { flex: 1; min-width: 0; }
+  .alert__title { font-weight: 500; margin: 0 0 2px; font-size: var(--fs-base); line-height: var(--lh-base); }
+  .alert__text  { color: var(--color-fg-muted); font-size: var(--fs-sm); line-height: var(--lh-sm); margin: 0; }
+  .alert--danger { border-color: var(--color-accent); }
+  .alert--danger .alert__icon { color: var(--color-accent); }
+  .alert--filled { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .alert--filled .alert__text { color: color-mix(in oklch, var(--color-bg) 75%, transparent); }
+  .alert--accent { background: var(--color-accent); color: var(--color-accent-fg); border-color: var(--color-accent); box-shadow: var(--shadow-sm); }
+  .alert--accent .alert__text { color: color-mix(in oklch, var(--color-accent-fg) 80%, transparent); }
+
+  /* Tooltip */
+  .tooltip-wrap { position: relative; display: inline-flex; }
+  .tooltip {
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 10px; background: var(--color-fg); color: var(--color-bg);
+    font-size: var(--fs-xs); line-height: var(--lh-xs);
+    border-radius: var(--radius-sm); white-space: nowrap;
+    pointer-events: none; box-shadow: var(--shadow-xs);
+  }
+  .tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--color-fg);
+  }
+
+  /* Modal */
+  .modal {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: 24px; max-width: 480px; width: 100%;
+  }
+  .modal__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+  .modal__title { font-size: var(--fs-lg); line-height: var(--lh-lg); font-weight: 500; margin: 0; }
+  .modal__text  { color: var(--color-fg-muted); margin: 0 0 20px; font-size: var(--fs-sm); line-height: var(--lh-sm); }
+  .modal__actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal__close {
+    background: transparent; border: 0; cursor: pointer; padding: 4px;
+    color: var(--color-fg-muted); border-radius: var(--radius-sm);
+    display: grid; place-items: center;
+  }
+  .modal__close:hover { color: var(--color-fg); background: var(--color-surface-2); }
+  .modal__close svg { width: 16px; height: 16px; }
+  .modal-overlay {
+    background: var(--color-surface-2);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 24px; display: grid; place-items: center;
+  }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 1px solid var(--color-border); gap: 0; }
+  .tabs__btn {
+    background: transparent; border: 0; padding: 10px 14px;
+    font: 500 var(--fs-base)/1.4 var(--font-sans); color: var(--color-fg-muted);
+    cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tabs__btn:hover { color: var(--color-fg); }
+  .tabs__btn[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-accent); }
+
+  /* Segmented */
+  .segmented {
+    display: inline-flex; padding: 3px;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+  }
+  .segmented button {
+    background: transparent; border: 0; cursor: pointer;
+    padding: 6px 14px; font: 500 var(--fs-sm)/1 var(--font-sans);
+    color: var(--color-fg-muted); border-radius: 4px;
+  }
+  .segmented button[aria-selected="true"] { background: var(--color-fg); color: var(--color-bg); }
+
+  /* Menu */
+  .menu {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 6px; min-width: 220px;
+  }
+  .menu__item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: var(--fs-sm); color: var(--color-fg);
+  }
+  .menu__item:hover { background: var(--color-surface-2); }
+  .menu__item svg { width: 14px; height: 14px; color: var(--color-fg-muted); flex-shrink: 0; }
+  .menu__item--danger { color: var(--color-accent); }
+  .menu__item--danger svg { color: var(--color-accent); }
+  .menu__sep { height: 1px; background: var(--color-border); margin: 4px 2px; }
+  .menu__kbd { margin-left: auto; }
+
+  /* Steps */
+  .steps { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .steps__item { display: flex; align-items: center; gap: 10px; }
+  .steps__dot {
+    width: 28px; height: 28px; border-radius: 999px;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    display: grid; place-items: center;
+    font: 500 13px/1 var(--font-mono); color: var(--color-fg);
+  }
+  .steps__item--done .steps__dot   { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+  .steps__item--active .steps__dot { background: var(--color-accent); color: var(--color-accent-fg); border-color: var(--color-accent); box-shadow: var(--shadow-xs); }
+  .steps__label { font-size: var(--fs-sm); color: var(--color-fg-muted); white-space: nowrap; }
+  .steps__item--active .steps__label { color: var(--color-fg); font-weight: 500; }
+  .steps__bar { width: 32px; height: 1px; background: var(--color-border); }
+  .steps__item--done + .steps__bar { background: var(--color-fg); }
+
+  /* Avatar */
+  .avatar {
+    width: 36px; height: 36px; border-radius: 999px;
+    background: var(--color-fg); color: var(--color-bg);
+    display: inline-grid; place-items: center;
+    font: 500 13px/1 var(--font-sans);
+    border: 1px solid var(--color-fg); flex-shrink: 0;
+  }
+  .avatar--lg     { width: 48px; height: 48px; font-size: 16px; }
+  .avatar--accent { background: var(--color-accent); color: var(--color-accent-fg); border-color: var(--color-accent); }
+  .avatar-stack { display: inline-flex; }
+  .avatar-stack > .avatar { margin-left: -10px; outline: 2px solid var(--color-bg); }
+  .avatar-stack > .avatar:first-child { margin-left: 0; }
+
+  /* Tag */
+  .tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 4px 4px 10px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 999px;
+    font-size: var(--fs-xs); line-height: 1; color: var(--color-fg);
+  }
+  .tag__close {
+    width: 18px; height: 18px; border-radius: 999px;
+    background: transparent; border: 0; cursor: pointer;
+    display: grid; place-items: center; color: var(--color-fg-muted);
+  }
+  .tag__close:hover { background: var(--color-surface-2); color: var(--color-fg); }
+  .tag__close svg { width: 10px; height: 10px; }
+  .tag--accent { background: var(--color-accent); color: var(--color-accent-fg); border-color: var(--color-accent); }
+  .tag--accent .tag__close { color: var(--color-accent-fg); }
+  .tag--accent .tag__close:hover { background: color-mix(in oklch, var(--color-accent) 70%, var(--color-fg)); color: var(--color-accent-fg); }
+
+  /* Kbd */
+  .kbd {
+    display: inline-grid; place-items: center;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    background: var(--color-surface); border: 1px solid var(--color-border-strong);
+    border-bottom-width: 2px; border-radius: var(--radius-sm);
+    font: 500 11px/1 var(--font-mono); color: var(--color-fg);
+  }
+
+  /* Inline code */
+  .code-inline {
+    background: var(--color-surface-2); border: 1px solid var(--color-border);
+    padding: 1px 6px; border-radius: var(--radius-sm);
+    font: 500 0.9em/1.4 var(--font-mono); color: var(--color-accent);
+  }
+
+  /* Table */
+  .table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+  .table th, .table td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--color-border); }
+  .table th { font-weight: 500; color: var(--color-fg-muted); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.04em; }
+  .table tr:last-child td { border-bottom: 0; }
+  .table tbody tr:hover td { background: var(--color-surface-2); }
+  .table-wrap { border: 1px solid var(--color-border-strong); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-xs); }
+
+  /* Stat */
+  .stat {
+    padding: 18px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-xs);
+  }
+  .stat__label { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-fg-muted); margin: 0 0 8px; }
+  .stat__value { font: 500 var(--fs-2xl)/1 var(--font-mono); color: var(--color-fg); }
+  .stat__delta { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-xs); margin-top: 6px; color: var(--color-fg-muted); }
+  .stat__delta--up { color: var(--color-accent); }
+
+  /* Divider */
+  .divider { display: flex; align-items: center; gap: 12px; color: var(--color-fg-subtle); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.06em; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--color-border); }
+
+  /* Accordion */
+  .accordion { border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: var(--color-surface); overflow: hidden; }
+  .accordion__item + .accordion__item { border-top: 1px solid var(--color-border); }
+  .accordion__summary {
+    list-style: none; cursor: pointer; padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    font: 500 var(--fs-base)/1.4 var(--font-sans); color: var(--color-fg);
+  }
+  .accordion__summary::-webkit-details-marker { display: none; }
+  .accordion__chev {
+    width: 10px; height: 10px;
+    border-right: 2px solid var(--color-fg);
+    border-bottom: 2px solid var(--color-fg);
+    transform: rotate(45deg); transition: transform var(--motion-base) var(--ease-out);
+    margin-right: 4px; flex-shrink: 0;
+  }
+  details[open] > .accordion__summary .accordion__chev { transform: rotate(-135deg); margin-top: 4px; }
+  .accordion__body { padding: 0 16px 16px; color: var(--color-fg-muted); font-size: var(--fs-sm); line-height: var(--lh-sm); }
+
+  /* Dropzone */
+  .dropzone {
+    border: 2px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    padding: 28px; text-align: center; background: var(--color-surface);
+    display: flex; flex-direction: column; gap: 8px; align-items: center;
+    color: var(--color-fg-muted); cursor: pointer;
+    transition: background var(--motion-fast) var(--ease-out);
+  }
+  .dropzone:hover { background: var(--color-surface-2); }
+  .dropzone svg { width: 28px; height: 28px; color: var(--color-fg); }
+  .dropzone strong { color: var(--color-fg); font-weight: 500; }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 40px 24px;
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+  .empty__icon {
+    width: 44px; height: 44px; margin: 0 auto var(--space-4);
+    border: 1px solid var(--color-border-strong); border-radius: var(--radius-md);
+    display: grid; place-items: center; box-shadow: var(--shadow-xs);
+    color: var(--color-fg);
+  }
+  .empty__icon svg { width: 20px; height: 20px; }
+  .empty h3 { font-size: var(--fs-lg); margin: 0 0 8px; font-weight: 500; }
+  .empty p  { color: var(--color-fg-muted); margin: 0 0 16px; font-size: var(--fs-sm); }
+
+  /* UI grid helpers */
+  .ui-row     { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .ui-col     { display: flex; flex-direction: column; gap: 10px; }
+  .ui-grid-2  { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .ui-grid-3  { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .ui-grid-4  { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
 </style>
 </head>
 <body>
@@ -894,6 +1325,7 @@
     <nav class="nav__list" aria-label="Разделы">
       <a class="nav__item" href="#tokens"  aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>Токены</a>
       <a class="nav__item" href="#atoms"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>Атомы</a>
+      <a class="nav__item" href="#ui"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>UI</a>
       <a class="nav__item" href="#blocks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>Блоки</a>
       <a class="nav__item" href="#templates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Шаблон</a>
       <a class="nav__item" href="#motion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>Motion</a>
@@ -927,6 +1359,26 @@
       <li><a href="#eyebrow">Eyebrow</a></li>
       <li><a href="#crumbs">Хлебные крошки</a></li>
       <li><a href="#icons">Иконки</a></li>
+    </ul>
+    <h4>UI</h4>
+    <ul>
+      <li><a href="#inputs">Поля ввода</a></li>
+      <li><a href="#toggles">Тогглы</a></li>
+      <li><a href="#sliders">Слайдер</a></li>
+      <li><a href="#progress">Прогресс</a></li>
+      <li><a href="#alerts">Алерты</a></li>
+      <li><a href="#tooltip">Тултип</a></li>
+      <li><a href="#modal">Модалка</a></li>
+      <li><a href="#tabs">Табы и Segmented</a></li>
+      <li><a href="#menu">Dropdown-меню</a></li>
+      <li><a href="#stepsui">Шаги</a></li>
+      <li><a href="#avatars">Аватары и теги</a></li>
+      <li><a href="#kbd">Kbd и инлайн-код</a></li>
+      <li><a href="#table">Таблица</a></li>
+      <li><a href="#stats">KPI / Stat</a></li>
+      <li><a href="#accordion">Аккордеон</a></li>
+      <li><a href="#dropzone">Drop-zone</a></li>
+      <li><a href="#empty">Пустое состояние</a></li>
     </ul>
     <h4>Блоки</h4>
     <ul>
@@ -1343,6 +1795,698 @@
     <div class="ds-stage">
       <div class="icon-grid" id="iconGrid">
         <!-- Иконки JS-генерируются ниже из словаря ICONS, чтобы не дублировать SVG -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════════
+       2.5  UI · элементы интерфейса
+       ─────────────────────────────────────────────────────────────────
+       Большой раздел: всё, чего не хватает Атомам для построения любой
+       системы. Формы, тогглы, слайдеры, прогресс, обратная связь,
+       навигация, данные. Стиль общий: монохром, жёсткий красный акцент,
+       твёрдые тени. Все цвета — через var(--color-*), темы переключаются
+       без правок.
+       ═════════════════════════════════════════════════════════════════ -->
+  <section class="ds-section" id="ui">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI</span>
+      <h2 class="ds-section__title">Элементы интерфейса</h2>
+      <p class="ds-section__lead">Полный набор контролов, статусов и навигации. Каждый компонент с комментарием по схеме «что / когда / варианты / композиция / не делать», помогающим агенту собрать любой экран без вкусовщины. Клик по сниппету — копирует код в буфер.</p>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — текстовое поле (input/textarea/select). Жёсткая рамка
+                    border-strong, при hover/focus всплывает hard-shadow
+                    и сдвиг -1px -1px (как у кнопок).
+    ▸ КОГДА       — формы регистрации, фильтры, инлайн-редактирование,
+                    промпт-боксы.
+    ▸ ВАРИАНТЫ    — .input, .input-affix (с иконкой слева), .textarea,
+                    .select (нативный <select>), .field--error (красная
+                    рамка + .field__error снизу), :disabled.
+    ▸ КОМПОЗИЦИЯ  — обёртка <label class="field">: .field__label сверху,
+                    контрол посередине, .field__hint или .field__error
+                    снизу. Между полями — gap var(--space-4).
+    ▸ НЕ ДЕЛАТЬ   — не убирай label (placeholder ≠ label); не используй
+                    цвета кроме --color-accent для ошибок; не делай
+                    inputs без border-strong — теряется характер.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 01</span>
+      <h2 class="ds-section__title" id="inputs">Поля ввода</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-grid-2">
+        <label class="field">
+          <span class="field__label">Email</span>
+          <input class="input" type="email" placeholder="you@nii.dev">
+          <span class="field__hint">Используется для входа и уведомлений.</span>
+        </label>
+        <label class="field">
+          <span class="field__label">Поиск</span>
+          <span class="input-affix">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="input" type="search" placeholder="agents, tools, docs…">
+          </span>
+        </label>
+        <label class="field field--error">
+          <span class="field__label">Промокод</span>
+          <input class="input" type="text" value="WRONG">
+          <span class="field__error">Промокод не найден.</span>
+        </label>
+        <label class="field">
+          <span class="field__label">API Key</span>
+          <input class="input" type="text" value="sk-…lvqd" disabled>
+          <span class="field__hint">Заблокировано — выдаёт администратор.</span>
+        </label>
+        <label class="field" style="grid-column: 1 / -1;">
+          <span class="field__label">Промпт</span>
+          <textarea class="textarea" rows="3" placeholder="Опиши задачу для агента детально и без воды."></textarea>
+          <span class="field__hint">Markdown поддерживается.</span>
+        </label>
+        <label class="field">
+          <span class="field__label">Модель</span>
+          <span class="select">
+            <select class="select__native">
+              <option>opus-4-7</option>
+              <option>sonnet-4-7</option>
+              <option>haiku-4-7</option>
+            </select>
+          </span>
+        </label>
+        <div class="field">
+          <span class="field__label">Количество</span>
+          <div class="stepper" role="group" aria-label="Количество">
+            <button type="button" aria-label="Минус">–</button>
+            <input type="number" value="3" min="0">
+            <button type="button" aria-label="Плюс">+</button>
+          </div>
+          <span class="field__hint">Stepper для целых значений.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — checkbox / radio / switch. Бинарные состояния.
+    ▸ КОГДА       — checkbox: множественный выбор. radio: один из. switch:
+                    мгновенное вкл/выкл функции (без confirm).
+    ▸ ВАРИАНТЫ    — .check, .radio, .switch — у каждого скрытый <input>
+                    + визуальный «бокс/точка/трек». Активное состояние —
+                    заливается --color-accent.
+    ▸ КОМПОЗИЦИЯ  — между опциями group: gap 12–16px вертикально.
+                    label всегда справа от контрола.
+    ▸ НЕ ДЕЛАТЬ   — не используй switch для действий, требующих confirm —
+                    бери radio + кнопка Сохранить; не миксуй checkbox и
+                    radio в одной группе.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 02</span>
+      <h2 class="ds-section__title" id="toggles">Тогглы — checkbox · radio · switch</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-grid-3">
+        <div class="ui-col">
+          <span class="field__label">Checkbox</span>
+          <label class="check"><input type="checkbox" checked><span class="check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></span> Логировать запросы</label>
+          <label class="check"><input type="checkbox"><span class="check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></span> Стрим ответов</label>
+          <label class="check"><input type="checkbox" disabled><span class="check__box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></span> Beta-функции (скоро)</label>
+        </div>
+        <div class="ui-col">
+          <span class="field__label">Radio</span>
+          <label class="radio"><input type="radio" name="role" checked><span class="radio__dot"></span> Агент чтения</label>
+          <label class="radio"><input type="radio" name="role"><span class="radio__dot"></span> Агент исполнения</label>
+          <label class="radio"><input type="radio" name="role"><span class="radio__dot"></span> Гибридный режим</label>
+        </div>
+        <div class="ui-col">
+          <span class="field__label">Switch</span>
+          <label class="switch"><input type="checkbox" checked><span class="switch__track"></span> Тёмная тема при ночи</label>
+          <label class="switch"><input type="checkbox"><span class="switch__track"></span> Push-уведомления</label>
+          <label class="switch"><input type="checkbox"><span class="switch__track"></span> Анонимная аналитика</label>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — нативный <input type="range"> с кастомным трекером
+                    и thumb (красный кружок в чёрной обводке + hard-shadow).
+    ▸ КОГДА       — выбор значения по непрерывной шкале: громкость,
+                    температура модели, цена.
+    ▸ ВАРИАНТЫ    — single (см. пример), либо два range один над другим
+                    для диапазона (агент собирает min/max сам).
+    ▸ КОМПОЗИЦИЯ  — над range — .field__label + текущее значение справа
+                    моно-шрифтом. Под range — крайние значения мелким
+                    серым, чтобы было ясно min/max.
+    ▸ НЕ ДЕЛАТЬ   — не используй range для дискретных значений вроде
+                    «easy/medium/hard» — это segmented control.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 03</span>
+      <h2 class="ds-section__title" id="sliders">Слайдер</h2>
+    </div>
+    <div class="ds-stage">
+      <div style="display: grid; gap: 24px; max-width: 520px;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+            <span class="field__label">Температура модели</span>
+            <span style="font: 500 14px/1 var(--font-mono); color: var(--color-accent);">0.7</span>
+          </div>
+          <input class="range" type="range" min="0" max="1" step="0.05" value="0.7">
+          <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: var(--fs-xs); color: var(--color-fg-subtle);">
+            <span>0.0 · детерминирован</span><span>1.0 · креатив</span>
+          </div>
+        </div>
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+            <span class="field__label">Лимит токенов</span>
+            <span style="font: 500 14px/1 var(--font-mono); color: var(--color-accent);">4 096</span>
+          </div>
+          <input class="range" type="range" min="256" max="8192" step="256" value="4096">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — линейный progress bar, indeterminate-вариант, спиннер,
+                    skeleton-loader для контента.
+    ▸ КОГДА       — progress: знаешь % выполнения. indeterminate: знаешь
+                    что идёт работа, но не сколько. spinner: короткие
+                    операции <2 сек. skeleton: подгрузка карточки/списка.
+    ▸ ВАРИАНТЫ    — .progress · .progress--lg · .progress--indeterminate;
+                    .spinner · .spinner--lg; .skeleton · --text · --title
+                    · --avatar.
+    ▸ КОМПОЗИЦИЯ  — над progress — eyebrow «Обработка…» + значение справа.
+                    Skeleton повторяет реальную сетку (avatar + 2 строки)
+                    чтобы не дёргался layout при загрузке.
+    ▸ НЕ ДЕЛАТЬ   — не показывай progress на 100% дольше 200мс — сразу
+                    скрывай; не используй spinner если можешь использовать
+                    skeleton (skeleton сообщает что именно загрузится).
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 04</span>
+      <h2 class="ds-section__title" id="progress">Прогресс и загрузка</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-grid-2">
+        <div class="ui-col">
+          <span class="field__label">Прогресс — определённый</span>
+          <div class="progress"><div class="progress__bar" style="width: 38%;"></div></div>
+          <span class="field__hint">38% · 19/50 файлов</span>
+          <div class="progress progress--lg"><div class="progress__bar" style="width: 72%;"></div></div>
+          <span class="field__hint">72% · large вариант</span>
+        </div>
+        <div class="ui-col">
+          <span class="field__label">Прогресс — неопределённый</span>
+          <div class="progress progress--indeterminate"><div class="progress__bar"></div></div>
+          <span class="field__hint">Когда % неизвестен (стрим, поиск).</span>
+          <div class="ui-row" style="margin-top: 8px;">
+            <span class="spinner"></span>
+            <span class="spinner spinner--lg"></span>
+            <span style="color: var(--color-fg-muted); font-size: var(--fs-sm);">Спиннеры — для коротких операций.</span>
+          </div>
+        </div>
+        <div class="ui-col" style="grid-column: 1 / -1;">
+          <span class="field__label">Skeleton-загрузка карточки</span>
+          <div style="display: flex; gap: 14px; padding: 14px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface);">
+            <span class="skeleton skeleton--avatar"></span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+              <span class="skeleton skeleton--title" style="width: 60%;"></span>
+              <span class="skeleton skeleton--text" style="width: 90%;"></span>
+              <span class="skeleton skeleton--text" style="width: 70%;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — алерт/баннер: статусное сообщение с иконкой, заголовком
+                    и текстом. Жёсткая рамка + hard-shadow.
+    ▸ КОГДА       — info: подсказка/changelog. danger: ошибка валидации,
+                    проблема с биллингом. filled (чёрный): важная инфа
+                    которую нужно прочитать. accent (красный): критическая
+                    остановка, нужна реакция.
+    ▸ ВАРИАНТЫ    — .alert, .alert--danger, .alert--filled, .alert--accent.
+                    Опционально — кнопки .btn--ghost справа в .alert__body.
+    ▸ КОМПОЗИЦИЯ  — над/под формой; никогда не более одного --accent на
+                    экран. Иконка слева — 18×18 stroke 2.
+    ▸ НЕ ДЕЛАТЬ   — не используй цветные success/warning из других систем
+                    (зелёный/жёлтый): у нас только чёрный + красный.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 05</span>
+      <h2 class="ds-section__title" id="alerts">Алерты</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-col" style="gap: 12px;">
+        <div class="alert">
+          <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5h.01"/></svg>
+          <div class="alert__body">
+            <p class="alert__title">Новый changelog</p>
+            <p class="alert__text">opus-4-7 теперь доступна всем тарифам. Streaming работает быстрее на 18%.</p>
+          </div>
+        </div>
+        <div class="alert alert--danger">
+          <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18.5h.01"/></svg>
+          <div class="alert__body">
+            <p class="alert__title">Превышен лимит токенов</p>
+            <p class="alert__text">Дневной лимит 1М токенов исчерпан. Сбросится в 00:00 UTC или повысь тариф.</p>
+          </div>
+        </div>
+        <div class="alert alert--filled">
+          <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          <div class="alert__body">
+            <p class="alert__title">Запланированное обслуживание</p>
+            <p class="alert__text">12 мая 03:00–04:00 UTC — API будет недоступен. Уведоми пользователей заранее.</p>
+          </div>
+        </div>
+        <div class="alert alert--accent">
+          <svg class="alert__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          <div class="alert__body">
+            <p class="alert__title">Действие требуется</p>
+            <p class="alert__text">Подтверди email до 10 мая, иначе аккаунт будет заблокирован.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — тултип. Чёрный bubble с белым текстом, стрелка снизу.
+    ▸ КОГДА       — пояснение к икон-кнопке, расшифровка термина, hint
+                    к disabled-элементу.
+    ▸ ВАРИАНТЫ    — позиции: top (по умолчанию). Размер: один. Текста:
+                    максимум 60 символов в одну строку.
+    ▸ КОМПОЗИЦИЯ  — родитель .tooltip-wrap (relative) + .tooltip внутри.
+                    Появление: opacity на hover/focus (агент добавит CSS
+                    при необходимости — здесь показан в открытом виде).
+    ▸ НЕ ДЕЛАТЬ   — не пихай тултипы на мобильных touch-устройствах без
+                    таггл-аналога; не используй для критичной информации.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 06</span>
+      <h2 class="ds-section__title" id="tooltip">Тултип</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-row" style="gap: 60px; padding-top: 40px;">
+        <span class="tooltip-wrap">
+          <span class="tooltip">Скопировать в буфер</span>
+          <button class="btn btn--secondary btn--icon" aria-label="Копировать"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+        </span>
+        <span class="tooltip-wrap">
+          <span class="tooltip">⌘K — открыть командное меню</span>
+          <button class="btn btn--secondary">⌘K</button>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — модальное окно: карточка с заголовком, текстом,
+                    кнопкой закрыть и actions внизу. Hard-shadow lg.
+    ▸ КОГДА       — деструктивное подтверждение, форма создания, диалог
+                    выбора. Никогда — для информации (= alert).
+    ▸ ВАРИАНТЫ    — стандартный (см. пример). Кнопки в actions: справа,
+                    primary последняя. Деструктив = .btn--danger.
+    ▸ КОМПОЗИЦИЯ  — рендерится поверх затемнения (агент сам решит, как
+                    backdrop). Здесь показан внутри .modal-overlay.
+    ▸ НЕ ДЕЛАТЬ   — не делай модалку шире 480px; не больше 2 кнопок в
+                    actions; всегда есть «Отмена» (кроме confirm-only).
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 07</span>
+      <h2 class="ds-section__title" id="modal">Модалка</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="modal-overlay">
+        <div class="modal" role="dialog" aria-labelledby="modalT">
+          <div class="modal__head">
+            <h3 class="modal__title" id="modalT">Удалить агента?</h3>
+            <button class="modal__close" aria-label="Закрыть"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button>
+          </div>
+          <p class="modal__text">Агент «Reader-7» и его 142 запуска будут удалены безвозвратно. Это действие нельзя отменить.</p>
+          <div class="modal__actions">
+            <button class="btn btn--secondary">Отмена</button>
+            <button class="btn btn--danger">Удалить навсегда</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — табы (горизонтальные ссылки с активным подчёркиванием
+                    красным) + segmented control (компактный переключатель
+                    в чёрной плашке).
+    ▸ КОГДА       — табы: разделение содержимого страницы (Overview /
+                    Logs / Settings). Segmented: бинарный/тернарный
+                    переключатель режима в тулбаре (Day / Week / Month).
+    ▸ ВАРИАНТЫ    — .tabs (border-bottom + accent underline активного),
+                    .segmented (filled-fg для активного).
+    ▸ КОМПОЗИЦИЯ  — табы — сразу под Hero/header, без рамок сверху.
+                    Segmented — внутри тулбара/фильтров, рядом с поиском.
+    ▸ НЕ ДЕЛАТЬ   — не больше 5 табов; не используй segmented если
+                    опций >4 (бери select).
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 08</span>
+      <h2 class="ds-section__title" id="tabs">Табы и Segmented</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-col" style="gap: 24px;">
+        <div class="tabs" role="tablist">
+          <button class="tabs__btn" role="tab" aria-selected="true">Overview</button>
+          <button class="tabs__btn" role="tab" aria-selected="false">Logs</button>
+          <button class="tabs__btn" role="tab" aria-selected="false">Tools</button>
+          <button class="tabs__btn" role="tab" aria-selected="false">Settings</button>
+        </div>
+        <div class="ui-row">
+          <div class="segmented" role="tablist">
+            <button role="tab" aria-selected="true">Day</button>
+            <button role="tab" aria-selected="false">Week</button>
+            <button role="tab" aria-selected="false">Month</button>
+          </div>
+          <div class="segmented" role="tablist">
+            <button role="tab" aria-selected="false">Code</button>
+            <button role="tab" aria-selected="true">Preview</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — выпадающее меню: компактная карточка с пунктами,
+                    иконками слева, опциональным kbd-шорткатом справа,
+                    разделителями и деструктивным пунктом красным.
+    ▸ КОГДА       — overflow-меню «⋯», context-menu, user-menu в шапке.
+    ▸ ВАРИАНТЫ    — .menu__item, .menu__item--danger, .menu__sep.
+                    .menu__kbd для горячей клавиши (см. секцию Kbd).
+    ▸ КОМПОЗИЦИЯ  — шириной 200–280px; группы по 2–4 пункта разделены
+                    .menu__sep; деструктивный пункт — последним.
+    ▸ НЕ ДЕЛАТЬ   — не делай вложенных подменю глубже 1 уровня; не клади
+                    в меню больше 8 пунктов — это уже дроуэр.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 09</span>
+      <h2 class="ds-section__title" id="menu">Dropdown-меню</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="menu" role="menu" style="max-width: 260px;">
+        <div class="menu__item" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h10M11 12h10M11 20h10M3 4l2 2-2 2M3 12l2 2-2 2M3 20l2 2-2 2"/></svg>
+          Дублировать <span class="menu__kbd"><span class="kbd">⌘</span> <span class="kbd">D</span></span>
+        </div>
+        <div class="menu__item" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M12 4v16"/></svg>
+          Поделиться
+        </div>
+        <div class="menu__item" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 5 8 8-8 8M4 13h16"/></svg>
+          Экспорт в Remotion <span class="menu__kbd"><span class="kbd">⌘</span> <span class="kbd">E</span></span>
+        </div>
+        <div class="menu__sep"></div>
+        <div class="menu__item menu__item--danger" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+          Удалить навсегда
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — индикатор шагов в многошаговом флоу: круглые точки
+                    с номерами, между ними — линия. Активный — красный с
+                    тенью, пройденный — чёрный, будущий — белый.
+    ▸ КОГДА       — checkout, onboarding, мульти-форма (>3 шагов).
+    ▸ ВАРИАНТЫ    — .steps__item--done, --active, default. Линия между —
+                    .steps__bar (становится чёрной у пройденных).
+    ▸ КОМПОЗИЦИЯ  — сразу под Hero; под индикатором — текущая форма шага.
+                    Лейблы шагов — короткие (1–2 слова).
+    ▸ НЕ ДЕЛАТЬ   — не больше 5 шагов в одной полосе; не пропускай
+                    нумерацию (1·2·3, не 1·2·5).
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 10</span>
+      <h2 class="ds-section__title" id="stepsui">Шаги (stepper indicator)</h2>
+    </div>
+    <div class="ds-stage">
+      <ol class="steps">
+        <li class="steps__item steps__item--done"><span class="steps__dot"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></span><span class="steps__label">Аккаунт</span></li>
+        <li class="steps__bar"></li>
+        <li class="steps__item steps__item--done"><span class="steps__dot"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></span><span class="steps__label">Тариф</span></li>
+        <li class="steps__bar"></li>
+        <li class="steps__item steps__item--active"><span class="steps__dot">3</span><span class="steps__label">Команда</span></li>
+        <li class="steps__bar"></li>
+        <li class="steps__item"><span class="steps__dot">4</span><span class="steps__label">Готово</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — аватар (круг с инициалами или эмодзи) и тег-чип
+                    с кнопкой закрытия.
+    ▸ КОГДА       — аватар: автор коммита, участник команды.
+                    .avatar-stack: список участников комнаты/проекта.
+                    тег: фильтр-чип, метка задачи, выбранный пункт
+                    multi-select.
+    ▸ ВАРИАНТЫ    — .avatar, .avatar--lg, .avatar--accent (красный).
+                    .tag (default), .tag--accent (заливается красным).
+    ▸ КОМПОЗИЦИЯ  — аватар-стек: 3–5 аватаров, последний может быть
+                    «+12». Теги в .ui-row с gap 6–8px.
+    ▸ НЕ ДЕЛАТЬ   — не используй цветные градиенты в аватарах;
+                    не больше одной буквы в инициалах если ширина <36px.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 11</span>
+      <h2 class="ds-section__title" id="avatars">Аватары и теги</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-col" style="gap: 18px;">
+        <div class="ui-row">
+          <span class="avatar">VL</span>
+          <span class="avatar avatar--accent">SL</span>
+          <span class="avatar avatar--lg">AK</span>
+          <span class="avatar avatar--lg avatar--accent">M</span>
+          <span class="avatar-stack">
+            <span class="avatar">VL</span>
+            <span class="avatar">AK</span>
+            <span class="avatar">SL</span>
+            <span class="avatar avatar--accent">+12</span>
+          </span>
+        </div>
+        <div class="ui-row">
+          <span class="tag">research <button class="tag__close" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button></span>
+          <span class="tag">api · v2 <button class="tag__close" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button></span>
+          <span class="tag tag--accent">priority <button class="tag__close" aria-label="Удалить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button></span>
+          <span class="tag">remotion</span>
+          <span class="tag">design-system</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — Kbd: визуализация клавиши (Cmd, K, Enter…) с двойным
+                    нижним бордюром «как реальная клавиша».
+                    Inline-code: красный код прямо в тексте.
+    ▸ КОГДА       — kbd: горячие клавиши, шорткаты в подсказках.
+                    code-inline: имя файла, переменная, токен, путь —
+                    в абзаце или подписи.
+    ▸ ВАРИАНТЫ    — один размер Kbd, один inline-code.
+    ▸ КОМПОЗИЦИЯ  — связки клавиш через тонкий пробел между .kbd:
+                    <span class="kbd">⌘</span><span class="kbd">K</span>.
+    ▸ НЕ ДЕЛАТЬ   — не используй code-inline для длинных сниппетов
+                    (>40 символов) — бери .copy-block.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 12</span>
+      <h2 class="ds-section__title" id="kbd">Kbd и инлайн-код</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-col" style="gap: 16px;">
+        <p style="margin: 0;">Открой палитру: <span class="kbd">⌘</span> <span class="kbd">K</span>. Принять предложение: <span class="kbd">Tab</span>. Тема: <span class="kbd">T</span>.</p>
+        <p style="margin: 0;">Добавь файл <span class="code-inline">design-system.html</span> в проект и подключи через <span class="code-inline">var(--color-accent)</span>. Endpoint: <span class="code-inline">/v1/design</span>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — таблица с зеброй на hover, тонкими разделителями
+                    и uppercase-заголовками. Обёртка .table-wrap даёт
+                    рамку + hard-shadow.
+    ▸ КОГДА       — список запусков, биллинг, лог событий, dashboards.
+    ▸ ВАРИАНТЫ    — .table (без рамки), .table-wrap > .table (в рамке).
+                    Внутри ячеек: .tag, .badge, .avatar, .code-inline.
+    ▸ КОМПОЗИЦИЯ  — над таблицей — фильтры (segmented + search) и
+                    счётчик «Найдено N». Под — пагинация.
+    ▸ НЕ ДЕЛАТЬ   — не центрируй текст (только числа и иконки —
+                    центр/право); не делай >7 колонок без скролла.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 13</span>
+      <h2 class="ds-section__title" id="table">Таблица</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr><th>Агент</th><th>Запусков</th><th>Статус</th><th>Последний</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><div class="ui-row" style="gap: 10px;"><span class="avatar">R7</span> Reader-7</div></td><td>142</td><td><span class="tag">active</span></td><td>2 мин назад</td></tr>
+            <tr><td><div class="ui-row" style="gap: 10px;"><span class="avatar avatar--accent">W</span> Writer-pro</div></td><td>89</td><td><span class="tag tag--accent">throttled</span></td><td>17 мин назад</td></tr>
+            <tr><td><div class="ui-row" style="gap: 10px;"><span class="avatar">EX</span> Executor</div></td><td>331</td><td><span class="tag">active</span></td><td>сейчас</td></tr>
+            <tr><td><div class="ui-row" style="gap: 10px;"><span class="avatar">DR</span> Drafts</div></td><td>5</td><td><span class="tag">draft</span></td><td>3 дня назад</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — KPI-карточка: лейбл uppercase + крупное число
+                    моно-шрифтом + delta снизу (опционально).
+    ▸ КОГДА       — dashboard, биллинг, аналитика. По 3–4 в ряд.
+    ▸ ВАРИАНТЫ    — .stat__delta--up (красная стрелка). Без delta —
+                    просто метрика.
+    ▸ КОМПОЗИЦИЯ  — .ui-grid-3/4 для ряда карточек. Все одной высоты.
+    ▸ НЕ ДЕЛАТЬ   — не показывай >5 KPI на одном экране; не используй
+                    зелёный/красный для роста/падения — только акцент
+                    --color-accent для выделения важной delta.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 14</span>
+      <h2 class="ds-section__title" id="stats">KPI / Stat</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="ui-grid-4">
+        <div class="stat">
+          <p class="stat__label">Запусков сегодня</p>
+          <div class="stat__value">1 284</div>
+          <span class="stat__delta stat__delta--up">↑ 18% к вчера</span>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Среднее время</p>
+          <div class="stat__value">847<span style="font-size: 0.5em; color: var(--color-fg-subtle);">ms</span></div>
+          <span class="stat__delta">↓ 64ms</span>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Активные агенты</p>
+          <div class="stat__value">12</div>
+          <span class="stat__delta">из 15 деплоя</span>
+        </div>
+        <div class="stat">
+          <p class="stat__label">Расход токенов</p>
+          <div class="stat__value">412k</div>
+          <span class="stat__delta stat__delta--up">↑ лимит близко</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — аккордеон на нативном <details>. Шеврон справа,
+                    расширяется по клику.
+    ▸ КОГДА       — FAQ, расшифровка лога, расширенные настройки.
+    ▸ ВАРИАНТЫ    — один. Внутри .accordion__body — обычный текст или
+                    форма/таблица.
+    ▸ КОМПОЗИЦИЯ  — список 3–8 пунктов в .accordion. Можно открывать
+                    несколько одновременно (нативный <details>).
+    ▸ НЕ ДЕЛАТЬ   — не используй для основного контента — это для
+                    второстепенного, что можно скрыть по умолчанию.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 15</span>
+      <h2 class="ds-section__title" id="accordion">Аккордеон</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="accordion">
+        <details class="accordion__item" open>
+          <summary class="accordion__summary">Что значит throttled?<span class="accordion__chev"></span></summary>
+          <div class="accordion__body">Агент выполнил больше запросов чем разрешает тариф. Снизит скорость до начала следующего часа. На счёт не влияет.</div>
+        </details>
+        <details class="accordion__item">
+          <summary class="accordion__summary">Можно ли вернуть удалённого агента?<span class="accordion__chev"></span></summary>
+          <div class="accordion__body">Нет. Удаление окончательное. Восстановить нельзя даже из логов — оставайся уверен в действии или сначала выгрузи конфиг.</div>
+        </details>
+        <details class="accordion__item">
+          <summary class="accordion__summary">Как подключить агента к Remotion?<span class="accordion__chev"></span></summary>
+          <div class="accordion__body">Экспортируй через ⌘E → получишь JSON со схемой. В Remotion-проекте импортируй как props в <span class="code-inline">staticFile()</span> и используй цвета из THEME.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — drop-zone для файлов: пунктирная рамка, иконка
+                    загрузки, текст-приглашение.
+    ▸ КОГДА       — загрузка датасета, изображения, конфига.
+    ▸ ВАРИАНТЫ    — пустое состояние (см. пример), in-progress
+                    (skeleton + progress bar внутри), success (галочка).
+    ▸ КОМПОЗИЦИЯ  — занимает на всю ширину формы; под ним — лимиты
+                    «макс 10MB · png/jpg/svg».
+    ▸ НЕ ДЕЛАТЬ   — не делай dropzone маленьким (<200px высота) —
+                    в нём не будет смысла.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 16</span>
+      <h2 class="ds-section__title" id="dropzone">Drop-zone</h2>
+    </div>
+    <div class="ds-stage">
+      <label class="dropzone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        <strong>Перетащи файл или кликни</strong>
+        <span style="font-size: var(--fs-xs); color: var(--color-fg-subtle);">PNG, JPG, SVG · до 10 MB</span>
+      </label>
+    </div>
+  </section>
+
+  <!--
+    ▸ ЧТО ЭТО     — empty state: пунктирная карточка с иконкой,
+                    заголовком, подсказкой и CTA-кнопкой.
+    ▸ КОГДА       — первый заход (нет данных), пустой результат поиска,
+                    очищенная корзина.
+    ▸ ВАРИАНТЫ    — один. CTA опциональный.
+    ▸ КОМПОЗИЦИЯ  — занимает место списка/таблицы (там где должны были
+                    быть строки). Над — h2 секции, как обычно.
+    ▸ НЕ ДЕЛАТЬ   — не используй стоковые иллюстрации — у нас минимализм
+                    с иконкой в frame; не извиняйся в копи.
+  -->
+  <section class="ds-section">
+    <div class="ds-section__head">
+      <span class="ds-section__eyebrow">UI · 17</span>
+      <h2 class="ds-section__title" id="empty">Пустое состояние</h2>
+    </div>
+    <div class="ds-stage">
+      <div class="empty">
+        <div class="empty__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18l-2 12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L3 7z"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+        <h3>Пока нет агентов</h3>
+        <p>Создай первого агента из шаблона или с нуля. Это займёт 30 секунд.</p>
+        <div class="ui-row" style="justify-content: center;">
+          <button class="btn btn--accent">Создать агента</button>
+          <button class="btn btn--ghost">Шаблоны →</button>
+        </div>
       </div>
     </div>
   </section>
