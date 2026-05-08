@@ -514,17 +514,30 @@
   .pager__btn--next { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
 
   /* — Палитра-свотчи ———————————————————————————————————————————— */
+  /* Свотчи «помадка»: верх карточки полностью залит цветом, снизу текст.
+     Скругления у внешней рамки — наследуются от .swatch (overflow:hidden
+     обрезает цветную «шапку»), внутреннего прямоугольника не остаётся. */
   .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
   .swatch  {
-    display: grid; grid-template-rows: 64px auto auto; cursor: copy;
+    appearance: none; padding: 0; margin: 0; font: inherit; color: inherit;
+    display: grid; grid-template-rows: 96px auto auto; cursor: copy;
     background: var(--color-surface); border: 1px solid var(--color-fg);
-    border-radius: var(--radius-sm); overflow: hidden;
+    border-radius: var(--radius-md); overflow: hidden;
+    text-align: left;
     transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
   }
   .swatch:hover { transform: translate(-2px,-2px); box-shadow: var(--shadow-sm); }
-  .swatch__chip { background: var(--_c); border-bottom: 1px solid var(--color-fg); }
-  .swatch__name { padding: 8px 10px 0; font-size: 13px; font-weight: var(--weight-medium); }
-  .swatch__val  { padding: 0 10px 8px; font-family: var(--font-mono); font-size: 11px; color: var(--color-fg-muted); }
+  .swatch__chip {
+    background: var(--_c);
+    border-bottom: 1px solid var(--color-fg);
+    /* Шахматка под полупрозрачные цвета — чтобы было видно, что прозрачный */
+    background-image:
+      linear-gradient(var(--_c), var(--_c)),
+      conic-gradient(#e5e5e5 25%, #ffffff 0 50%, #e5e5e5 0 75%, #ffffff 0);
+    background-size: 100% 100%, 12px 12px;
+  }
+  .swatch__name { padding: 10px 12px 2px; font-size: 13px; font-weight: var(--weight-medium); }
+  .swatch__val  { padding: 0 12px 10px; font-family: var(--font-mono); font-size: 11px; color: var(--color-fg-muted); }
 
   /* — Сэмплы шрифта ———————————————————————————————————————————— */
   .type-row {
@@ -537,14 +550,52 @@
   .type-row__sample { color: var(--color-fg); }
   .type-row__meta { font-family: var(--font-mono); font-size: 11px; color: var(--color-fg-muted); }
 
-  /* — Spacing шкала визуально ——————————————————————————————————— */
-  .scale-list { display: grid; gap: 8px; }
+  /* — Spacing шкала визуально + наглядные применения ———————————————— */
+  .scale-list { display: grid; gap: 6px; max-width: 560px; }
   .scale-row {
-    display: grid; grid-template-columns: 80px 1fr 80px; gap: var(--space-3);
+    display: grid; grid-template-columns: 90px 1fr 60px; gap: var(--space-3);
     align-items: center; font-family: var(--font-mono); font-size: 12px;
   }
-  .scale-row__bar { height: 10px; background: var(--color-fg); border-radius: 4px; }
+  .scale-row__bar { height: 10px; background: var(--color-fg); border-radius: 2px; }
   .scale-row__val { color: var(--color-fg-muted); justify-self: end; }
+
+  /* Наглядные карточки «зачем нужен этот отступ» */
+  .space-uses { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-3); margin-top: var(--space-6); }
+  .space-use {
+    border: 1px solid var(--color-fg); border-radius: var(--radius-md);
+    background: var(--color-surface); padding: var(--space-4);
+    display: grid; gap: var(--space-3); align-content: start;
+  }
+  .space-use__head {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 8px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--color-fg-muted);
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  .space-use__head b { color: var(--color-fg); font-weight: var(--weight-medium); }
+  .space-use__demo {
+    border: 1px dashed var(--color-fg); border-radius: var(--radius-sm);
+    background:
+      repeating-linear-gradient(45deg, transparent 0 6px, color-mix(in oklch, var(--color-accent) 14%, transparent) 6px 7px);
+    display: flex; flex-wrap: wrap;
+  }
+  .space-use__chip {
+    background: var(--color-fg); color: var(--color-bg);
+    font: 500 12px/1 var(--font-sans);
+    padding: 8px 12px; border-radius: var(--radius-sm);
+  }
+  /* padding-демо: красная штриховка показывает сам отступ внутри карточки */
+  .space-use--pad .space-use__demo { padding: var(--_s); }
+  .space-use--pad .space-use__demo > * { background: var(--color-surface); color: var(--color-fg); border: 1px solid var(--color-fg); }
+  /* gap-демо: штриховка снаружи, между чипами — gap */
+  .space-use--gap .space-use__demo { padding: 8px; gap: var(--_s); }
+  /* between-демо: вертикальный gap между «секциями» */
+  .space-use--between .space-use__demo { padding: 0; flex-direction: column; gap: var(--_s); background: transparent; border: 0; }
+  .space-use--between .space-use__band {
+    height: 28px; border-radius: var(--radius-sm);
+    background: var(--color-fg); color: var(--color-bg);
+    display: grid; place-items: center; font-family: var(--font-mono); font-size: 11px;
+  }
+  .space-use--between .space-use__band--alt { background: var(--color-surface); color: var(--color-fg); border: 1px solid var(--color-fg); }
 
   /* — Радиусы визуально ——————————————————————————————————————— */
   .radius-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: var(--space-3); }
@@ -564,6 +615,212 @@
   .shadow-tile--sm { box-shadow: var(--shadow-sm); }
   .shadow-tile--md { box-shadow: var(--shadow-md); }
   .shadow-tile--lg { box-shadow: var(--shadow-lg); }
+
+  /* ─── Motion playground ─────────────────────────────────────────────
+     Выбор длительности + easing, набор пресетов, сцена.
+     Все анимации параметризованы через CSS-переменные --motion-dur
+     и --motion-ease, которые проставляет JS на .motion-stage.
+     ──────────────────────────────────────────────────────────────── */
+  .motion-controls {
+    display: flex; flex-wrap: wrap; gap: var(--space-6) var(--space-8);
+    padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4);
+    border: 1px solid var(--color-fg); border-radius: var(--radius-md);
+    background: var(--color-surface); box-shadow: var(--shadow-xs);
+  }
+  .motion-controls__group { display: grid; gap: 8px; }
+  .motion-controls__label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--color-fg-muted);
+  }
+  .motion-chips { display: inline-flex; gap: -1px; }
+  .motion-chip {
+    appearance: none; border: 1px solid var(--color-fg);
+    background: var(--color-surface); color: var(--color-fg);
+    padding: 8px 14px; font: var(--weight-medium) 13px/1 var(--font-sans);
+    cursor: pointer;
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast);
+  }
+  .motion-chip + .motion-chip { margin-left: -1px; }
+  .motion-chips .motion-chip:first-child { border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
+  .motion-chips .motion-chip:last-child  { border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
+  .motion-chip:hover { background: var(--color-surface-2); }
+  .motion-chip.is-active {
+    background: var(--color-fg); color: var(--color-bg);
+    position: relative; z-index: 1;
+  }
+
+  .motion-presets {
+    display: flex; flex-wrap: wrap; gap: var(--space-2);
+    margin-bottom: var(--space-4);
+  }
+  .motion-preset {
+    appearance: none; cursor: pointer;
+    padding: 10px 16px; border-radius: var(--radius-pill);
+    border: 1px solid var(--color-fg); background: var(--color-surface);
+    color: var(--color-fg); font: var(--weight-medium) 13px/1 var(--font-sans);
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .motion-preset:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow-xs); }
+  .motion-preset:active { transform: translate(0,0); box-shadow: none; }
+  .motion-preset.is-firing {
+    background: var(--color-accent); color: var(--color-accent-fg); border-color: var(--color-accent);
+  }
+
+  .motion-stage {
+    position: relative; min-height: 320px;
+    border: 1px solid var(--color-fg); border-radius: var(--radius-lg);
+    /* Шахматка как в фотошопе — нейтральный фон под любые демо */
+    background-color: var(--color-surface);
+    background-image:
+      conic-gradient(var(--color-surface-2) 25%, transparent 0 50%, var(--color-surface-2) 0 75%, transparent 0);
+    background-size: 16px 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    --motion-dur: 220ms;
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .motion-stage__hint {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    color: var(--color-fg-subtle); font-size: 13px; pointer-events: none;
+    transition: opacity var(--dur-base) var(--ease-out);
+  }
+  .motion-stage.has-played .motion-stage__hint { opacity: 0; }
+  .motion-stage__readout {
+    position: absolute; left: 12px; bottom: 10px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--color-fg-muted);
+    background: var(--color-surface); border: 1px solid var(--color-border);
+    padding: 4px 8px; border-radius: var(--radius-sm); z-index: 3;
+  }
+  .motion-stage__readout b { color: var(--color-fg); font-weight: var(--weight-medium); }
+
+  /* Контейнер для демо — JS меняет его содержимое и запускает CSS-анимации */
+  .motion-demo {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    padding: 32px;
+  }
+
+  /* — Базовые keyframes. Каждый пресет добавляет свой класс к .motion-demo
+       и/или к его детям. Длительность/easing берётся из родителя через var. */
+  @keyframes m-fade       { from { opacity: 0; }                        to { opacity: 1; } }
+  @keyframes m-slide-up   { from { opacity: 0; transform: translateY(28px); }  to { opacity: 1; transform: none; } }
+  @keyframes m-slide-right{ from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+  @keyframes m-scale      { from { opacity: 0; transform: scale(.86); }        to { opacity: 1; transform: scale(1); } }
+  @keyframes m-pop {
+    0%   { opacity: 0; transform: translate(6px,6px); box-shadow: 0 0 0 0 var(--color-fg); }
+    60%  { opacity: 1; transform: translate(-3px,-3px); box-shadow: 6px 6px 0 0 var(--color-fg); }
+    100% { opacity: 1; transform: translate(0,0);       box-shadow: 4px 4px 0 0 var(--color-fg); }
+  }
+  @keyframes m-underline  { from { transform: scaleX(0); }              to { transform: scaleX(1); } }
+  @keyframes m-caret      { 50% { opacity: 0; } }
+
+  .motion-demo .m-card {
+    background: var(--color-surface); border: 1px solid var(--color-fg);
+    border-radius: var(--radius-md); padding: 18px 22px; min-width: 220px;
+    font: var(--weight-medium) 15px/1.3 var(--font-sans);
+    box-shadow: var(--shadow-sm);
+    animation-duration: var(--motion-dur); animation-timing-function: var(--motion-ease);
+    animation-fill-mode: both;
+  }
+  .motion-demo .m-card .m-card__sub {
+    display: block; margin-top: 4px;
+    font: 400 12px/1.3 var(--font-mono); color: var(--color-fg-muted);
+  }
+
+  .motion-demo[data-pattern="fade"]        .m-card { animation-name: m-fade; }
+  .motion-demo[data-pattern="slide-up"]    .m-card { animation-name: m-slide-up; }
+  .motion-demo[data-pattern="slide-right"] .m-card { animation-name: m-slide-right; }
+  .motion-demo[data-pattern="scale"]       .m-card { animation-name: m-scale; }
+  .motion-demo[data-pattern="pop"]         .m-card { animation-name: m-pop; box-shadow: none; }
+
+  /* Stagger: пилюли по размеру контента, с маленькой иконкой, без буллетов */
+  .motion-demo[data-pattern="stagger"] {
+    display: flex; flex-direction: column; gap: 10px;
+    align-items: center; justify-content: center;
+  }
+  .motion-demo[data-pattern="stagger"] .m-row {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--color-surface); border: 1px solid var(--color-fg);
+    border-radius: 999px; padding: 8px 16px;
+    font: 500 13px/1 var(--font-sans);
+    box-shadow: var(--shadow-xs);
+    animation: m-slide-up var(--motion-dur) var(--motion-ease) both;
+  }
+  .motion-demo[data-pattern="stagger"] .m-row svg { width: 14px; height: 14px; flex: 0 0 auto; color: var(--color-fg-muted); }
+  .motion-demo[data-pattern="stagger"] .m-row:nth-child(1) { animation-delay: 0ms; }
+  .motion-demo[data-pattern="stagger"] .m-row:nth-child(2) { animation-delay: calc(var(--motion-dur) * .25); }
+  .motion-demo[data-pattern="stagger"] .m-row:nth-child(3) { animation-delay: calc(var(--motion-dur) * .50); }
+  .motion-demo[data-pattern="stagger"] .m-row:nth-child(4) { animation-delay: calc(var(--motion-dur) * .75); }
+
+  /* Marker highlight: красная заливка «как маркером» проявляется по тексту,
+     буквы поверх неё становятся белыми. Оффсеты слева/справа/сверху/снизу. */
+  .motion-demo[data-pattern="underline"] { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; }
+  .motion-demo[data-pattern="underline"] .m-line {
+    position: relative; display: inline-block; padding: 6px 14px;
+    color: var(--color-fg);
+    isolation: isolate;
+  }
+  .motion-demo[data-pattern="underline"] .m-line::before {
+    content: ""; position: absolute; inset: 0;
+    background: var(--color-accent); border-radius: 4px;
+    transform: scaleX(0); transform-origin: left center;
+    z-index: -1;
+    animation: m-underline var(--motion-dur) var(--motion-ease) forwards;
+  }
+  /* Когда заливка докатилась — буквы становятся белыми (через тот же таймер) */
+  .motion-demo[data-pattern="underline"] .m-line {
+    animation: m-marker-text var(--motion-dur) var(--motion-ease) forwards;
+  }
+  @keyframes m-marker-text {
+    0%, 60% { color: var(--color-fg); }
+    100%    { color: var(--color-accent-fg); }
+  }
+
+  /* Flow-схемы: блок 1 → блок 2 → блок 3. Анимируется появление каждого
+     блока + стрелки между ними по очереди. */
+  .motion-demo[data-pattern="flow-h"],
+  .motion-demo[data-pattern="flow-v"] { padding: 24px; }
+  .motion-demo[data-pattern="flow-h"] .m-flow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .motion-demo[data-pattern="flow-v"] .m-flow { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .m-flow .m-node {
+    background: var(--color-surface); border: 1px solid var(--color-fg);
+    border-radius: var(--radius-md); padding: 10px 16px;
+    font: 500 13px/1 var(--font-sans); white-space: nowrap;
+    box-shadow: var(--shadow-xs);
+    animation: m-scale var(--motion-dur) var(--motion-ease) both;
+  }
+  .m-flow .m-arrow {
+    display: inline-grid; place-items: center; color: var(--color-fg-muted);
+    animation: m-fade var(--motion-dur) var(--motion-ease) both;
+  }
+  .m-flow .m-arrow svg { width: 22px; height: 22px; }
+  /* Очередь: каждый последующий узел появляется чуть позже */
+  .m-flow > *:nth-child(1) { animation-delay: 0ms; }
+  .m-flow > *:nth-child(2) { animation-delay: calc(var(--motion-dur) * .20); }
+  .m-flow > *:nth-child(3) { animation-delay: calc(var(--motion-dur) * .40); }
+  .m-flow > *:nth-child(4) { animation-delay: calc(var(--motion-dur) * .60); }
+  .m-flow > *:nth-child(5) { animation-delay: calc(var(--motion-dur) * .80); }
+
+  /* Terminal type: посимвольная печать через CSS steps() */
+  .motion-demo[data-pattern="type"] {
+    font-family: var(--font-mono); font-size: 14px; color: var(--color-fg);
+    align-items: start; padding: 28px 32px;
+  }
+  .motion-demo[data-pattern="type"] .m-term {
+    background: var(--color-fg); color: var(--color-inverse-fg);
+    border-radius: var(--radius-md); padding: 14px 16px; min-width: 320px;
+    box-shadow: var(--shadow-sm);
+  }
+  .motion-demo[data-pattern="type"] .m-term .m-prompt { color: var(--color-accent); }
+  .motion-demo[data-pattern="type"] .m-term .m-typed {
+    display: inline-block; overflow: hidden; white-space: nowrap; vertical-align: bottom;
+    width: 0; animation: m-type var(--motion-dur) var(--motion-ease) forwards;
+  }
+  .motion-demo[data-pattern="type"] .m-term .m-caret {
+    display: inline-block; width: 7px; height: 1em; vertical-align: -2px;
+    background: var(--color-inverse-fg); margin-left: 2px;
+    animation: m-caret 800ms steps(2) infinite;
+  }
+  @keyframes m-type { from { width: 0; } to { width: 22ch; } }
 
   /* — Иконки ————————————————————————————————————————————————————— */
   .icon-grid {
@@ -795,9 +1052,10 @@
     <div class="ds-section__head">
       <span class="ds-section__eyebrow">Токены · 03</span>
       <h2 class="ds-section__title">Сетка и отступы</h2>
-      <p class="ds-section__lead">База 4px. Контейнер чтения 760px, широкий — 1120px. Между секциями 64–96px.</p>
+      <p class="ds-section__lead">База 4px. Контейнер чтения 760px, широкий — 1120px. Между секциями 64–96px. Слева — шкала, справа — три типичных применения: padding, gap, межблочный отступ.</p>
     </div>
     <div class="ds-stage">
+      <div style="display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.2fr); gap: var(--space-8); align-items: start;">
       <div class="scale-list">
         <div class="scale-row"><span>--space-1</span><span class="scale-row__bar" style="width:4px"></span><span class="scale-row__val">4px</span></div>
         <div class="scale-row"><span>--space-2</span><span class="scale-row__bar" style="width:8px"></span><span class="scale-row__val">8px</span></div>
@@ -811,6 +1069,22 @@
         <div class="scale-row"><span>--space-16</span><span class="scale-row__bar" style="width:64px"></span><span class="scale-row__val">64px</span></div>
         <div class="scale-row"><span>--space-20</span><span class="scale-row__bar" style="width:80px"></span><span class="scale-row__val">80px</span></div>
         <div class="scale-row"><span>--space-24</span><span class="scale-row__bar" style="width:96px" data-comment-anchor="2c8445ff93-span"></span><span class="scale-row__val">96px</span></div>
+      </div>
+      <!-- Зачем нужны эти отступы — три наглядных применения. Красная штриховка = сам отступ. -->
+      <div class="space-uses" style="margin: 0;">
+        <div class="space-use space-use--pad" style="--_s: 16px">
+          <div class="space-use__head">padding внутри карточки <b>--space-4 · 16px</b></div>
+          <div class="space-use__demo"><div class="space-use__chip" style="background:transparent;color:var(--color-fg);width:100%;text-align:center;padding:10px 0">Контент</div></div>
+        </div>
+        <div class="space-use space-use--gap" style="--_s: 8px">
+          <div class="space-use__head">gap между чипами <b>--space-2 · 8px</b></div>
+          <div class="space-use__demo"><span class="space-use__chip">chip</span><span class="space-use__chip">chip</span><span class="space-use__chip">chip</span></div>
+        </div>
+        <div class="space-use space-use--between" style="--_s: 24px">
+          <div class="space-use__head">между секциями <b>--space-6 · 24px</b></div>
+          <div class="space-use__demo"><div class="space-use__band">Секция A</div><div class="space-use__band space-use__band--alt">Секция B</div></div>
+        </div>
+      </div>
       </div>
     </div>
   </section>
@@ -863,57 +1137,67 @@
   </section>
 
   <!--
-    ▸ ЧТО ЭТО     — анимационные токены: 3 длительности, 3 easing.
+    ▸ ЧТО ЭТО     — анимационные токены + интерактивная песочница.
+    ▸ КАК         — сначала выбери ДЛИТЕЛЬНОСТЬ и EASING (чипы сверху).
+                    Затем жми любую анимацию из списка — она проиграется
+                    в сцене ниже с выбранными параметрами.
     ▸ КОГДА       — fast: hover/focus, base: появление и перестроения,
                     slow: модалы и большие пере-композиции.
     ▸ REMOTION    — fps 30. Конвертируй ms → frames: ms / (1000/fps).
                     fast=4 кадра, base=7, slow=13.
-    ▸ НЕ ДЕЛАТЬ   — не используй ease-in для появлений (input делает их
-                    «вялыми»). Не делай анимаций > 500ms на UI.
+    ▸ НЕ ДЕЛАТЬ   — не используй ease-in для появлений (вход выглядит
+                    вялым). Не делай UI-анимаций > 500ms.
   -->
   <section class="ds-section" id="motion">
     <div class="ds-section__head">
       <span class="ds-section__eyebrow">Токены · 06</span>
       <h2 class="ds-section__title">Motion</h2>
-      <p class="ds-section__lead">Стандартный «вход» — 220ms ease-out. В Remotion это 7 кадров при 30 fps.</p>
+      <p class="ds-section__lead">Выбери длительность и easing, затем жми кнопки — анимация проиграется в сцене ниже.</p>
     </div>
-    <div class="ds-stage">
-      <div class="ds-meta" style="font-size: 13px;">
-        <div class="ds-meta__row"><dt>fast</dt><dd><span class="copy" data-copy="120ms">120ms</span> · hover, focus</dd></div>
-        <div class="ds-meta__row"><dt>base</dt><dd><span class="copy" data-copy="220ms">220ms</span> · появление, перестроение</dd></div>
-        <div class="ds-meta__row"><dt>slow</dt><dd><span class="copy" data-copy="420ms">420ms</span> · модалы, большие сцены</dd></div>
-        <div class="ds-meta__row"><dt>ease-out</dt><dd><span class="copy" data-copy="cubic-bezier(0.22, 1, 0.36, 1)">cubic-bezier(0.22, 1, 0.36, 1)</span> · вход</dd></div>
-        <div class="ds-meta__row"><dt>ease-in</dt><dd><span class="copy" data-copy="cubic-bezier(0.55, 0, 1, 0.45)">cubic-bezier(0.55, 0, 1, 0.45)</span> · уход</dd></div>
-        <div class="ds-meta__row"><dt>ease-in-out</dt><dd><span class="copy" data-copy="cubic-bezier(0.65, 0, 0.35, 1)">cubic-bezier(0.65, 0, 0.35, 1)</span> · акценты</dd></div>
+
+    <!-- Параметры: длительность + easing. Чипы — radio-группа. -->
+    <div class="motion-controls">
+      <div class="motion-controls__group">
+        <span class="motion-controls__label">Длительность</span>
+        <div class="motion-chips" role="radiogroup" data-motion-axis="dur">
+          <button class="motion-chip" role="radio" data-value="120">fast · 120ms</button>
+          <button class="motion-chip is-active" role="radio" data-value="220" aria-checked="true">base · 220ms</button>
+          <button class="motion-chip" role="radio" data-value="420">slow · 420ms</button>
+        </div>
       </div>
-      <pre class="copy-block" style="margin-top: var(--space-4);" data-copy='// Remotion theme bridge
-const THEME = {
-  fps: 30,
-  dur: { fast: 4, base: 7, slow: 13 },     // в кадрах
-  ease: {
-    out:    [0.22, 1, 0.36, 1],
-    in:     [0.55, 0, 1, 0.45],
-    inOut:  [0.65, 0, 0.35, 1]
-  },
-  color: {
-    bg:        "#FFFFFF",
-    surface:   "#FFFFFF",
-    fg:        "#0A0A0A",
-    fgMuted:   "#555555",
-    border:    "#E5E5E5",
-    accent:    "#E5342B",
-    inverseBg: "#0A0A0A",
-    inverseFg: "#F4F4F4",
-  },
-  shadow: {
-    xs: "2px 2px 0 0 #0A0A0A",
-    sm: "3px 3px 0 0 #0A0A0A",
-    md: "5px 5px 0 0 #0A0A0A",
-    lg: "8px 8px 0 0 #0A0A0A"
-  },
-  font: { sans: "Geist", mono: "Geist Mono" }
-};</pre>
+      <div class="motion-controls__group">
+        <span class="motion-controls__label">Easing</span>
+        <div class="motion-chips" role="radiogroup" data-motion-axis="ease">
+          <button class="motion-chip is-active" role="radio" data-value="cubic-bezier(0.22, 1, 0.36, 1)" aria-checked="true">out</button>
+          <button class="motion-chip" role="radio" data-value="cubic-bezier(0.55, 0, 1, 0.45)">in</button>
+          <button class="motion-chip" role="radio" data-value="cubic-bezier(0.65, 0, 0.35, 1)">in-out</button>
+        </div>
+      </div>
     </div>
+
+    <!-- Триггеры: каждая кнопка = один пресет анимации. -->
+    <div class="motion-presets">
+      <button class="motion-preset" data-motion="fade">Fade in</button>
+      <button class="motion-preset" data-motion="slide-up">Slide up</button>
+      <button class="motion-preset" data-motion="slide-right">Slide right</button>
+      <button class="motion-preset" data-motion="scale">Scale in</button>
+      <button class="motion-preset" data-motion="pop">Hard-shadow pop</button>
+      <button class="motion-preset" data-motion="stagger">Stagger list</button>
+      <button class="motion-preset" data-motion="underline">Marker highlight</button>
+      <button class="motion-preset" data-motion="type">Terminal type</button>
+      <button class="motion-preset" data-motion="flow-h">Flow → горизонтальный</button>
+      <button class="motion-preset" data-motion="flow-v">Flow ↓ вертикальный</button>
+    </div>
+
+    <!-- Сцена: сюда «прилетает» демо. Чёрная рамка + жёсткая тень — как везде. -->
+    <div class="motion-stage" id="motionStage" aria-live="polite">
+      <div class="motion-stage__hint">Выбери длительность и easing → жми пресет ↑</div>
+      <div class="motion-stage__readout">
+        dur:&nbsp;<b id="motionDurReadout">220ms</b>
+        &nbsp;·&nbsp;ease:&nbsp;<b id="motionEaseReadout">out</b>
+      </div>
+    </div>
+
   </section>
 
   <!-- ═════════════════════════════════════════════════════════════════
@@ -952,7 +1236,9 @@ const THEME = {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
       </button>
     </div>
-    <pre class="copy-block" style="margin-top: var(--space-4);" data-copy='&lt;button class="btn btn--primary"&gt;CTA&lt;/button&gt;
+    <pre class="copy-block" id="btnSnippet" style="margin-top: var(--space-4);" data-copy='&lt;button class="btn btn--primary"&gt;CTA&lt;/button&gt;
+&lt;button class="btn btn--secondary"&gt;Secondary&lt;/button&gt;
+&lt;button class="btn btn--ghost"&gt;Ghost&lt;/button&gt;'>&lt;button class="btn btn--primary"&gt;CTA&lt;/button&gt;
 &lt;button class="btn btn--secondary"&gt;Secondary&lt;/button&gt;
 &lt;button class="btn btn--ghost"&gt;Ghost&lt;/button&gt;</pre>
   </section>
@@ -1273,8 +1559,8 @@ const THEME = {
       <span class="ds-section__eyebrow">Блоки · 06</span>
       <h2 class="ds-section__title" id="terminal">Терминал</h2>
     </div>
-    <div class="ds-stage ds-stage--alt">
-      <div class="terminal" role="img" aria-label="Сессия терминала">
+    <div class="ds-stage ds-stage--alt" style="border-color: rgb(234, 157, 157)">
+      <div class="terminal" role="img" aria-label="Сессия терминала" style="background-color: rgb(255, 0, 0)">
         <div class="terminal__bar">
           <span class="terminal__dot terminal__dot--r"></span>
           <span class="terminal__dot terminal__dot--y"></span>
@@ -1580,6 +1866,131 @@ const THEME = {
       applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     }
   });
+
+  // ── Motion playground ───────────────────────────────────────────────────
+  // Логика:
+  //  1. Чипы dur/ease — radio-группы. Активный чип определяет CSS-переменные
+  //     --motion-dur и --motion-ease на сцене.
+  //  2. Кнопки .motion-preset перерисовывают .motion-stage детьми с нужным
+  //     data-pattern. Сами анимации описаны CSS-keyframes выше.
+  //  3. Чтобы анимация переигралась повторно при том же пресете —
+  //     удаляем и заново вставляем DOM-узел (force reflow).
+  (() => {
+    const stage = document.getElementById('motionStage');
+    if (!stage) return;
+    const durOut  = document.getElementById('motionDurReadout');
+    const easeOut = document.getElementById('motionEaseReadout');
+
+    const state = {
+      dur: '220ms',
+      ease: 'cubic-bezier(0.22, 1, 0.36, 1)',
+      easeName: 'out',
+    };
+
+    function syncStage() {
+      stage.style.setProperty('--motion-dur',  state.dur);
+      stage.style.setProperty('--motion-ease', state.ease);
+      durOut.textContent  = state.dur;
+      easeOut.textContent = state.easeName;
+    }
+    syncStage();
+
+    // Чипы — radio
+    document.querySelectorAll('.motion-chips').forEach((group) => {
+      const axis = group.getAttribute('data-motion-axis'); // dur | ease
+      group.addEventListener('click', (e) => {
+        const chip = e.target.closest('.motion-chip');
+        if (!chip) return;
+        group.querySelectorAll('.motion-chip').forEach((c) => {
+          c.classList.toggle('is-active', c === chip);
+          c.setAttribute('aria-checked', c === chip ? 'true' : 'false');
+        });
+        const v = chip.getAttribute('data-value');
+        if (axis === 'dur')  state.dur = v + (v.endsWith('ms') ? '' : 'ms');
+        if (axis === 'ease') {
+          state.ease = v;
+          state.easeName = chip.textContent.trim();
+        }
+        syncStage();
+      });
+    });
+
+    // Шаблоны демо-разметки. Каждая функция возвращает innerHTML для .motion-demo
+    const TEMPLATES = {
+      'fade':         () => `<div class="m-card">Скопировано в буфер<span class="m-card__sub">opacity 0 → 1</span></div>`,
+      'slide-up':     () => `<div class="m-card">Новый агент создан<span class="m-card__sub">translateY 28 → 0</span></div>`,
+      'slide-right':  () => `<div class="m-card">→ открыт справочник<span class="m-card__sub">translateX -40 → 0</span></div>`,
+      'scale':        () => `<div class="m-card">Модал · подтверди действие<span class="m-card__sub">scale .86 → 1</span></div>`,
+      'pop':          () => `<div class="m-card">Hard-shadow pop<span class="m-card__sub">приземление с тенью 6px 6px</span></div>`,
+      'stagger':      () => `
+          <div class="m-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-5-5"/></svg>Распознать изображение</div>
+          <div class="m-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>Найти упоминания в сети</div>
+          <div class="m-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4z"/></svg>Сгенерировать видео-ролик</div>
+          <div class="m-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/></svg>Отправить отчёт в Notion</div>`,
+      'underline':    () => `<div class="m-line">важный фрагмент</div>`,
+      'type':         () => `<div class="m-term"><span class="m-prompt">$</span> <span class="m-typed">claude run agents</span><span class="m-caret"></span></div>`,
+      'flow-h':       () => `<div class="m-flow">
+          <div class="m-node">Запрос</div>
+          <div class="m-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="m-node">Агент</div>
+          <div class="m-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="m-node">Ответ</div>
+        </div>`,
+      'flow-v':       () => `<div class="m-flow">
+          <div class="m-node">Запрос</div>
+          <div class="m-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <div class="m-node">Агент</div>
+          <div class="m-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></div>
+          <div class="m-node">Ответ</div>
+        </div>`,
+    };
+
+    function play(pattern, btn) {
+      // Очистить предыдущий демо-узел
+      stage.querySelectorAll('.motion-demo').forEach((n) => n.remove());
+      stage.classList.add('has-played');
+
+      const demo = document.createElement('div');
+      demo.className = 'motion-demo';
+      demo.setAttribute('data-pattern', pattern);
+      demo.innerHTML = TEMPLATES[pattern]();
+      stage.appendChild(demo);
+
+      // Подсветить триггер на длительность анимации (+небольшой запас)
+      if (btn) {
+        btn.classList.add('is-firing');
+        const ms = parseInt(state.dur, 10) || 220;
+        setTimeout(() => btn.classList.remove('is-firing'), ms + 120);
+      }
+    }
+
+    document.querySelectorAll('.motion-preset').forEach((btn) => {
+      btn.addEventListener('click', () => play(btn.getAttribute('data-motion'), btn));
+    });
+
+    // Авто-демо при первом появлении секции, чтобы было понятно что это
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) {
+          const first = document.querySelector('.motion-preset[data-motion="slide-up"]');
+          if (first) play('slide-up', first);
+          io.disconnect();
+        }
+      });
+    }, { threshold: 0.4 });
+    io.observe(document.getElementById('motion'));
+  })();
+
+  // Defensive: strip unknown bare attributes that direct-edit replay can leave
+  // on .copy-block (e.g. JS source pasted into the pre once, parser-mangled).
+  (function sanitizeCopyBlocks() {
+    const KEEP = new Set(['class','style','id','data-copy','data-copied','data-om-id','data-comment-anchor']);
+    document.querySelectorAll('pre.copy-block').forEach((pre) => {
+      [...pre.attributes].forEach((a) => { if (!KEEP.has(a.name)) pre.removeAttribute(a.name); });
+      const want = pre.getAttribute('data-copy');
+      if (want && pre.textContent.trim() !== want.trim()) pre.textContent = want;
+    });
+  })();
 </script>
 </body>
 </html>
